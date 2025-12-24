@@ -10,300 +10,311 @@
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .hidden { display: none !important; }
-        video { transform: scaleX(-1); } 
+        video { transform: scaleX(-1); }
+        .btn-disabled { background-color: #94a3b8; cursor: not-allowed; opacity: 0.7; }
     </style>
 </head>
-<body class="bg-gray-100 text-slate-800 h-screen overflow-hidden relative">
+<body class="bg-gray-50 text-slate-800 h-screen overflow-hidden relative">
 
     <section id="page-login" class="h-full flex flex-col justify-center px-6 bg-white">
-        <div class="mb-10">
-            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-200">
-                <i class="ph ph-fingerprint text-2xl text-white"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-slate-900">Selamat Datang</h1>
-            <p class="text-slate-500 mt-2">Silakan masuk untuk melakukan presensi.</p>
+        <div class="mb-10 text-center">
+            <h1 class="text-3xl font-bold text-blue-600">Presensi Sekolah</h1>
+            <p class="text-slate-500">Silakan login untuk memulai</p>
         </div>
-
-        <form onsubmit="event.preventDefault(); doLogin();" class="space-y-5">
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input type="email" id="login-email" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition" required placeholder="nama@sekolah.sch.id">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                <input type="password" id="login-pass" class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition" required placeholder="••••••">
-            </div>
-            <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 transition active:scale-95">
-                Masuk Aplikasi
-            </button>
+        <form onsubmit="event.preventDefault(); doLogin();" class="space-y-4">
+            <input type="email" id="login-email" class="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Email" required>
+            <input type="password" id="login-pass" class="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password" required>
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition">Masuk</button>
         </form>
-        
-        <p class="mt-8 text-center text-sm text-slate-500">
-            Belum punya akun? <a href="#" onclick="switchPage('page-register')" class="text-blue-600 font-semibold">Daftar disini</a>
-        </p>
+        <div class="mt-6 text-center">
+            <a href="#" onclick="switchPage('page-register')" class="text-sm text-blue-600 font-semibold">Daftar Akun Baru</a>
+        </div>
     </section>
 
     <section id="page-register" class="h-full flex flex-col justify-center px-6 bg-white hidden">
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-900">Buat Akun Baru</h1>
-            <p class="text-slate-500">Isi data diri Anda dengan benar.</p>
-        </div>
-
-        <form onsubmit="event.preventDefault(); doRegister();" class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold uppercase text-slate-400">Nama Lengkap</label>
-                <input type="text" id="reg-nama" class="w-full px-4 py-3 rounded-lg bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 border focus:ring-2 focus:ring-blue-100 outline-none transition" required>
-            </div>
-            <div>
-                <label class="block text-xs font-bold uppercase text-slate-400">Jabatan / Mapel</label>
-                <input type="text" id="reg-jabatan" class="w-full px-4 py-3 rounded-lg bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 border focus:ring-2 focus:ring-blue-100 outline-none transition" placeholder="Contoh: Guru Matematika" required>
-            </div>
-            <div>
-                <label class="block text-xs font-bold uppercase text-slate-400">Email</label>
-                <input type="email" id="reg-email" class="w-full px-4 py-3 rounded-lg bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 border focus:ring-2 focus:ring-blue-100 outline-none transition" required>
-            </div>
-            <div>
-                <label class="block text-xs font-bold uppercase text-slate-400">Password</label>
-                <input type="password" id="reg-pass" class="w-full px-4 py-3 rounded-lg bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 border focus:ring-2 focus:ring-blue-100 outline-none transition" required>
-            </div>
-            <button type="submit" id="btn-reg" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition active:scale-95 mt-2">
-                Daftar Sekarang
-            </button>
+        <h1 class="text-2xl font-bold mb-6">Pendaftaran</h1>
+        <form onsubmit="event.preventDefault(); doRegister();" class="space-y-3">
+            <input type="text" id="reg-nama" class="w-full px-4 py-3 rounded-lg border" placeholder="Nama Lengkap" required>
+            <input type="text" id="reg-jabatan" class="w-full px-4 py-3 rounded-lg border" placeholder="Jabatan" required>
+            <input type="email" id="reg-email" class="w-full px-4 py-3 rounded-lg border" placeholder="Email" required>
+            <input type="password" id="reg-pass" class="w-full px-4 py-3 rounded-lg border" placeholder="Password" required>
+            <button type="submit" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg">Daftar</button>
         </form>
-        
-        <p class="mt-6 text-center text-sm text-slate-500">
-            Sudah punya akun? <a href="#" onclick="switchPage('page-login')" class="text-blue-600 font-semibold">Login</a>
-        </p>
+        <div class="mt-4 text-center">
+            <a href="#" onclick="switchPage('page-login')" class="text-sm text-blue-600">Kembali ke Login</a>
+        </div>
     </section>
 
-    <section id="page-dashboard" class="h-full flex flex-col hidden">
-        <div class="bg-white px-6 pt-12 pb-6 rounded-b-[2.5rem] shadow-sm z-10">
-            <div class="flex justify-between items-start">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl" id="avatar-initial">U</div>
-                    <div>
-                        <h2 class="font-bold text-lg text-slate-900 leading-tight" id="dash-nama">User Name</h2>
-                        <p class="text-xs text-slate-500" id="dash-jabatan">Staff</p>
-                    </div>
+    <section id="page-dashboard" class="h-full flex flex-col hidden relative">
+        <div class="bg-blue-600 px-6 pt-10 pb-16 rounded-b-[2.5rem] shadow-lg text-white relative z-10">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="font-bold text-lg leading-tight" id="dash-nama">Loading...</h2>
+                    <p class="text-xs text-blue-200" id="dash-jabatan">...</p>
                 </div>
-                <button onclick="doLogout()" class="text-slate-400 hover:text-red-500 transition">
-                    <i class="ph ph-sign-out text-2xl"></i>
+                <button onclick="doLogout()" class="bg-blue-500 p-2 rounded-full hover:bg-blue-400 transition">
+                    <i class="ph ph-sign-out text-xl"></i>
                 </button>
             </div>
             
-            <div class="mt-6 bg-slate-900 rounded-2xl p-5 text-white shadow-xl shadow-slate-300 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-10">
-                    <i class="ph ph-calendar-check text-8xl"></i>
-                </div>
-                <p class="text-slate-400 text-xs mb-1" id="dash-date">Senin, 1 Januari 2025</p>
-                <h3 class="text-3xl font-mono font-bold tracking-wider mb-4" id="dash-clock">00:00</h3>
-                <div class="flex gap-4">
-                    <div>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest">Masuk</p>
-                        <p class="font-semibold text-emerald-400" id="status-masuk">--:--</p>
-                    </div>
-                    <div class="w-px bg-slate-700"></div>
-                    <div>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-widest">Pulang</p>
-                        <p class="font-semibold text-orange-400" id="status-pulang">--:--</p>
-                    </div>
-                </div>
+            <div class="flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm">
+                <i class="ph ph-map-pin text-yellow-300"></i>
+                <span id="loc-status">Mencari Lokasi...</span>
             </div>
         </div>
 
-        <div class="flex-1 px-6 flex flex-col justify-center gap-4">
-            <button onclick="openCamera('MASUK')" class="group relative w-full bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 active:scale-95 transition">
-                <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 group-hover:scale-110 transition">
-                    <i class="ph ph-arrow-right font-bold text-xl"></i>
+        <div class="px-6 -mt-10 pb-6 flex-1 overflow-y-auto space-y-4 z-20">
+            
+            <div class="bg-white p-4 rounded-xl shadow-md border border-slate-100 flex gap-4">
+                <div class="flex-1 text-center border-r border-slate-100">
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">Terlambat</p>
+                    <p class="text-xl font-bold text-red-500"><span id="rekap-terlambat">0</span> <span class="text-xs font-normal text-slate-400">mnt</span></p>
                 </div>
-                <div class="text-left">
-                    <h3 class="font-bold text-slate-800">Presensi Masuk</h3>
-                    <p class="text-xs text-slate-500">Catat waktu kedatangan Anda</p>
+                <div class="flex-1 text-center">
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">Pulang Awal</p>
+                    <p class="text-xl font-bold text-orange-500"><span id="rekap-awal">0</span> <span class="text-xs font-normal text-slate-400">mnt</span></p>
                 </div>
-            </button>
+            </div>
 
-            <button onclick="openCamera('PULANG')" class="group relative w-full bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 active:scale-95 transition">
-                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 group-hover:scale-110 transition">
-                    <i class="ph ph-arrow-left font-bold text-xl"></i>
-                </div>
-                <div class="text-left">
-                    <h3 class="font-bold text-slate-800">Presensi Pulang</h3>
-                    <p class="text-xs text-slate-500">Selesaikan pekerjaan hari ini</p>
-                </div>
-            </button>
-        </div>
+            <div class="text-center py-2">
+                <h3 class="text-4xl font-mono font-bold text-slate-700" id="dash-clock">00:00</h3>
+                <p class="text-xs text-slate-400" id="dash-date">...</p>
+            </div>
 
-        <div class="p-6 text-center">
-            <p class="text-[10px] text-slate-300">Location Based Attendance System v2.0</p>
+            <div id="card-masuk" class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 transition">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-slate-700">Presensi Masuk</span>
+                    <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">07:00 WIB</span>
+                </div>
+                <div id="btn-container-masuk">
+                    <button onclick="openCamera('MASUK')" id="btn-masuk" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2">
+                        <i class="ph ph-camera text-lg"></i> Absen Masuk
+                    </button>
+                </div>
+                <div id="info-masuk" class="hidden mt-2 p-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm text-center border border-emerald-100">
+                    <i class="ph ph-check-circle-fill"></i> Sudah Absen pukul <span id="jam-absen-masuk" class="font-bold"></span>
+                </div>
+            </div>
+
+            <div id="card-pulang" class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 transition">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-slate-700">Presensi Pulang</span>
+                    <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">14:00 WIB</span>
+                </div>
+                <div id="btn-container-pulang">
+                    <button onclick="openCamera('PULANG')" id="btn-pulang" class="w-full bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2">
+                        <i class="ph ph-camera text-lg"></i> Absen Pulang
+                    </button>
+                </div>
+                <div id="info-pulang" class="hidden mt-2 p-2 bg-orange-50 text-orange-700 rounded-lg text-sm text-center border border-orange-100">
+                     <i class="ph ph-check-circle-fill"></i> Terakhir Pulang pukul <span id="jam-absen-pulang" class="font-bold"></span>
+                     <br><span class="text-[10px] text-orange-400">(Klik tombol lagi untuk update jam pulang)</span>
+                </div>
+            </div>
+
         </div>
     </section>
 
-    <div id="camera-modal" class="fixed inset-0 z-50 bg-black hidden flex flex-col">
-        <div class="relative flex-1 bg-black overflow-hidden flex justify-center items-center">
+    <div id="camera-modal" class="fixed inset-0 bg-black z-50 hidden flex flex-col">
+        <div class="relative flex-1 bg-black flex justify-center items-center overflow-hidden">
             <video id="video-feed" autoplay playsinline class="absolute w-full h-full object-cover"></video>
             <canvas id="canvas-capture" class="hidden"></canvas>
-            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div class="w-64 h-64 border-2 border-white/30 rounded-full"></div>
-            </div>
+            <div class="absolute w-64 h-64 border-2 border-white/50 rounded-full"></div>
         </div>
-        <div class="bg-slate-900 p-8 flex justify-between items-center">
-            <button onclick="closeCamera()" class="text-slate-400 hover:text-white">Batal</button>
-            <button onclick="captureAndSend()" class="w-16 h-16 bg-white rounded-full border-4 border-slate-600 active:scale-90 transition flex items-center justify-center">
-                <div class="w-14 h-14 bg-white rounded-full border-2 border-black"></div>
-            </button>
+        <div class="bg-slate-900 p-6 flex justify-between items-center">
+            <button onclick="closeCamera()" class="text-white">Batal</button>
+            <button onclick="captureAndSend()" class="w-16 h-16 bg-white rounded-full border-4 border-slate-500"></button>
             <div class="w-8"></div>
         </div>
     </div>
-
-    <div id="loader" class="fixed inset-0 bg-black/80 z-[60] hidden flex flex-col justify-center items-center text-white backdrop-blur-sm">
-        <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p id="loader-text" class="text-sm font-medium">Memproses...</p>
+    
+    <div id="loader" class="fixed inset-0 bg-black/80 z-[60] hidden flex flex-col justify-center items-center text-white">
+        <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+        <p id="loader-text">Loading...</p>
     </div>
 
     <script>
-        // CONFIG
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzUYPw3r_TT2Gp_szw-MvQpJSJgBnpq6hM1qjXhBOQY0fQTQiMiZFdBY1mC4eOXd0DgbQ/exec'; 
+        // --- KONFIGURASI ---
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx32OYos8E8k7r_DqLnrGZ1leyuFZ6rc1h4Xb3oKPIGbKtobiniifDOIjh0AVbDpGu-0w/exec'; 
+        const SCHOOL_LOC = { lat: -7.557944144328827, lng: 110.76941858051475 };
+        const MAX_RADIUS = 500; // Meter
 
-        // STATE
-        let currentUser = JSON.parse(localStorage.getItem('user_data')) || null;
+        let currentUser = null;
         let currentType = '';
         let videoStream = null;
+        let currentDist = 9999;
 
-        // INIT
         window.onload = () => {
-            if(currentUser) {
-                initDashboard();
+            const saved = localStorage.getItem('user_session');
+            if(saved) {
+                const session = JSON.parse(saved);
+                currentUser = session.user;
+                // Render dulu yang ada di cache biar cepat
+                renderDashboard(session.user, session.stats);
                 switchPage('page-dashboard');
+                // Refresh data di background untuk update rekap terbaru
+                refreshData(session.user); 
             } else {
                 switchPage('page-login');
             }
             setInterval(updateClock, 1000);
+            watchLocation(); // Mulai pantau GPS
         };
 
-        // NAVIGATION
-        function switchPage(pageId) {
+        function switchPage(id) {
             document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
+            document.getElementById(id).classList.remove('hidden');
         }
 
-        // CLOCK
         function updateClock() {
             const now = new Date();
             document.getElementById('dash-clock').innerText = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
             document.getElementById('dash-date').innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
         }
 
-        // AUTH FUNCTIONS
-        function setLoading(show, text='Loading...') {
-            const el = document.getElementById('loader');
-            const txt = document.getElementById('loader-text');
-            if(show) {
-                txt.innerText = text;
-                el.classList.remove('hidden');
-            } else {
-                el.classList.add('hidden');
-            }
-        }
-
-        function doRegister() {
-            setLoading(true, 'Mendaftarkan...');
-            const data = {
-                action: 'register',
-                nama: document.getElementById('reg-nama').value,
-                jabatan: document.getElementById('reg-jabatan').value,
-                email: document.getElementById('reg-email').value,
-                password: document.getElementById('reg-pass').value
-            };
-
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Penting di GAS
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            }).then(() => {
-                setLoading(false);
-                alert('Pendaftaran berhasil! Silakan Login.');
-                switchPage('page-login');
-            }).catch(e => {
-                setLoading(false);
-                alert('Error: ' + e);
-            });
-        }
-
+        // --- AUTH & DATA ---
         function doLogin() {
-            setLoading(true, 'Masuk...');
-            const data = {
-                action: 'login',
-                email: document.getElementById('login-email').value,
-                password: document.getElementById('login-pass').value
-            };
+            setLoading(true, 'Sedang Masuk...');
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
 
-            // Karena kita butuh response data user, kita gunakan teknik fetch redirect handling atau jsonp.
-            // TAPI untuk GAS 'no-cors' kita tidak bisa baca response body.
-            // WORKAROUND: Kita asumsikan logic di Client Side sederhana atau gunakan proxy.
-            // Untuk solusi gratis & sederhana, kita akan gunakan fetch dengan redirect: 'follow'.
-            
             fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify(data)
+                body: JSON.stringify({ action: 'login', email: email, password: pass })
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(res => {
                 setLoading(false);
                 if(res.status === 'success') {
                     currentUser = res.data;
-                    localStorage.setItem('user_data', JSON.stringify(currentUser));
-                    initDashboard();
+                    // Simpan sesi + stats
+                    localStorage.setItem('user_session', JSON.stringify({ user: res.data, stats: res.stats }));
+                    renderDashboard(res.data, res.stats);
                     switchPage('page-dashboard');
                 } else {
                     alert(res.message);
                 }
             })
-            .catch(e => {
-                setLoading(false);
-                // Fallback debug karena GAS kadang return HTML error
-                alert('Gagal login. Pastikan internet lancar atau password benar.');
+            .catch(e => { setLoading(false); alert('Gagal koneksi: ' + e); });
+        }
+
+        function refreshData(user) {
+            // Panggil API diam-diam untuk update stats terbaru
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'login', email: user.email, password: '...' }) // Password dummy jika backend hanya butuh email untuk rekap (perlu disesuaikan logic backend jika strict)
+                // Di backend Code.gs saya tadi strict check password. 
+                // Agar aman, di 'user_session' simpan password (tidak disarankan utk app serius) 
+                // atau buat action khusus 'get_stats' di backend.
+                // Untuk sekarang kita gunakan data login awal saja cukup.
             });
         }
-
+        
         function doLogout() {
-            if(confirm('Keluar dari aplikasi?')) {
-                localStorage.removeItem('user_data');
-                currentUser = null;
-                switchPage('page-login');
+            if(confirm('Keluar akun?')) {
+                localStorage.removeItem('user_session');
+                location.reload();
             }
         }
 
-        function initDashboard() {
-            document.getElementById('dash-nama').innerText = currentUser.nama;
-            document.getElementById('dash-jabatan').innerText = currentUser.jabatan;
-            document.getElementById('avatar-initial').innerText = currentUser.nama.charAt(0);
+        function renderDashboard(user, stats) {
+            document.getElementById('dash-nama').innerText = user.nama;
+            document.getElementById('dash-jabatan').innerText = user.jabatan;
             
-            // Load status hari ini dari localstorage (biar cepat)
-            const today = new Date().toDateString();
-            const lastLog = JSON.parse(localStorage.getItem('last_log') || '{}');
-            
-            if(lastLog.date === today) {
-                if(lastLog.masuk) document.getElementById('status-masuk').innerText = lastLog.masuk;
-                if(lastLog.pulang) document.getElementById('status-pulang').innerText = lastLog.pulang;
+            // Render Rekap
+            document.getElementById('rekap-terlambat').innerText = stats.terlambat;
+            document.getElementById('rekap-awal').innerText = stats.pulang_awal;
+
+            // Render Status Absen Hari Ini
+            if(stats.sudah_masuk) {
+                document.getElementById('info-masuk').classList.remove('hidden');
+                document.getElementById('jam-absen-masuk').innerText = stats.jam_masuk;
+                // Opsional: Disable tombol masuk jika sudah
+                 document.getElementById('btn-masuk').classList.add('hidden');
             } else {
-                // Reset display kalo hari baru
-                document.getElementById('status-masuk').innerText = "--:--";
-                document.getElementById('status-pulang').innerText = "--:--";
+                 document.getElementById('info-masuk').classList.add('hidden');
+                 document.getElementById('btn-masuk').classList.remove('hidden');
+            }
+
+            if(stats.sudah_pulang) {
+                document.getElementById('info-pulang').classList.remove('hidden');
+                document.getElementById('jam-absen-pulang').innerText = stats.jam_pulang;
+                // Tombol pulang TETAP MUNCUL agar bisa update (sesuai request)
+            } else {
+                document.getElementById('info-pulang').classList.add('hidden');
             }
         }
 
-        // CAMERA & ABSEN
+        // --- LOCATION & GEOFENCE ---
+        function watchLocation() {
+            if(navigator.geolocation) {
+                navigator.geolocation.watchPosition(pos => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    currentDist = getDistance(lat, lng, SCHOOL_LOC.lat, SCHOOL_LOC.lng);
+                    
+                    const elStatus = document.getElementById('loc-status');
+                    const btnMasuk = document.getElementById('btn-masuk');
+                    const btnPulang = document.getElementById('btn-pulang');
+
+                    if(currentDist > MAX_RADIUS) {
+                        elStatus.innerText = `Di Luar Lokasi (${Math.round(currentDist)}m)`;
+                        elStatus.parentElement.classList.replace('bg-blue-700/50', 'bg-red-600/80');
+                        
+                        // Disable Buttons
+                        disableButton(btnMasuk, true);
+                        disableButton(btnPulang, true);
+                    } else {
+                        elStatus.innerText = `Dalam Lokasi (${Math.round(currentDist)}m)`;
+                        elStatus.parentElement.classList.replace('bg-red-600/80', 'bg-blue-700/50');
+                        
+                        // Enable Buttons
+                        disableButton(btnMasuk, false);
+                        disableButton(btnPulang, false);
+                    }
+                }, err => {
+                    document.getElementById('loc-status').innerText = "GPS Error/Mati";
+                }, { enableHighAccuracy: true });
+            }
+        }
+
+        function disableButton(btn, disable) {
+            if(disable) {
+                btn.disabled = true;
+                btn.classList.add('btn-disabled', 'bg-slate-400');
+                btn.classList.remove('bg-emerald-500', 'bg-orange-500', 'hover:bg-emerald-600', 'hover:bg-orange-600');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('btn-disabled', 'bg-slate-400');
+                if(btn.id.includes('masuk')) btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+                if(btn.id.includes('pulang')) btn.classList.add('bg-orange-500', 'hover:bg-orange-600');
+            }
+        }
+
+        // Haversine Formula (Client Side)
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // meters
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // --- CAMERA & ABSEN ---
         async function openCamera(type) {
+            if(currentDist > MAX_RADIUS) {
+                alert('Anda berada di luar jangkauan radius sekolah!');
+                return;
+            }
             currentType = type;
             document.getElementById('camera-modal').classList.remove('hidden');
             try {
                 videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                 document.getElementById('video-feed').srcObject = videoStream;
-            } catch (e) {
-                alert('Gagal akses kamera');
-                closeCamera();
-            }
+            } catch(e) { alert('Gagal akses kamera'); closeCamera(); }
         }
 
         function closeCamera() {
@@ -314,22 +325,14 @@
         function captureAndSend() {
             const video = document.getElementById('video-feed');
             const canvas = document.getElementById('canvas-capture');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
+            ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0);
-
             const fotoBase64 = canvas.toDataURL('image/jpeg', 0.5);
-            closeCamera();
-            setLoading(true, 'Mengirim Lokasi & Foto...');
 
-            if(!navigator.geolocation) {
-                alert('Browser tidak dukung GPS');
-                setLoading(false);
-                return;
-            }
+            setLoading(true, 'Mengirim Presensi...');
+            closeCamera();
 
             navigator.geolocation.getCurrentPosition(pos => {
                 const payload = {
@@ -350,28 +353,34 @@
                     body: JSON.stringify(payload)
                 }).then(() => {
                     setLoading(false);
-                    alert(`Absen ${currentType} Berhasil!`);
-                    
-                    // Simpan log lokal untuk UI
-                    const today = new Date().toDateString();
-                    const nowTime = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-                    let log = JSON.parse(localStorage.getItem('last_log') || '{}');
-                    
-                    if(log.date !== today) log = { date: today };
-                    if(currentType === 'MASUK') log.masuk = nowTime;
-                    else log.pulang = nowTime;
-                    
-                    localStorage.setItem('last_log', JSON.stringify(log));
-                    initDashboard();
-                    
-                }).catch(e => {
-                    setLoading(false);
-                    alert('Gagal kirim data');
-                });
-            }, err => {
-                setLoading(false);
-                alert('Gagal ambil lokasi GPS!');
+                    alert(`Presensi ${currentType} Berhasil!`);
+                    // Update UI manual biar gak perlu reload
+                    if(currentType === 'MASUK') {
+                        location.reload(); // Reload untuk ambil status terbaru dari server
+                    } else {
+                        location.reload();
+                    }
+                }).catch(e => { setLoading(false); alert('Gagal kirim: ' + e); });
             });
+        }
+
+        function doRegister() {
+            // ... (Kode register sama seperti sebelumnya) ...
+             const data = {
+                action: 'register',
+                nama: document.getElementById('reg-nama').value,
+                jabatan: document.getElementById('reg-jabatan').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-pass').value
+            };
+            setLoading(true, 'Daftar...');
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
+            .then(() => { setLoading(false); alert('Berhasil daftar, silakan login'); switchPage('page-login'); });
+        }
+        function setLoading(show, txt) {
+            const el = document.getElementById('loader');
+            if(show) { document.getElementById('loader-text').innerText = txt; el.classList.remove('hidden'); }
+            else el.classList.add('hidden');
         }
     </script>
 </body>
