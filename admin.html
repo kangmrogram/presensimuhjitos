@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Presensi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-5">
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Rekap Data Presensi</h1>
+            <button onclick="loadData()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Refresh Data</button>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3">Waktu</th>
+                        <th class="px-4 py-3">Email</th>
+                        <th class="px-4 py-3">Jenis</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Lokasi</th>
+                        <th class="px-4 py-3">Foto</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://presensi-sekolah.presensi-muhjitos.workers.dev'; // Contoh: https://presensi.nama.workers.dev
+        const R2_URL = 'https://pub-c3ab2f094f204f50b0bc07ac58ac3856.r2.dev'; // Contoh: https://pub-xyz.r2.dev
+
+        async function loadData() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">Loading...</td></tr>';
+            
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'get_rekap' })
+                });
+                const json = await res.json();
+                
+                if(json.status === 'success') {
+                    tbody.innerHTML = '';
+                    json.data.forEach(row => {
+                        const date = new Date(row.timestamp).toLocaleString('id-ID');
+                        const statusColor = row.status_waktu === 'TEPAT WAKTU' ? 'text-green-600' : 'text-red-600 font-bold';
+                        const mapLink = `https://maps.google.com/?q=${row.lat},${row.long}`;
+                        const fotoLink = `${R2_URL}/${row.foto_key}`;
+
+                        tbody.innerHTML += `
+                            <tr class="bg-white border-b hover:bg-gray-50">
+                                <td class="px-4 py-3">${date}</td>
+                                <td class="px-4 py-3 font-medium text-gray-900">${row.email}</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 rounded ${row.jenis==='MASUK'?'bg-emerald-100 text-emerald-800':'bg-orange-100 text-orange-800'}">${row.jenis}</span></td>
+                                <td class="px-4 py-3 ${statusColor}">${row.status_waktu} (${row.menit_selisih}m)</td>
+                                <td class="px-4 py-3"><a href="${mapLink}" target="_blank" class="text-blue-600 hover:underline">Lihat Peta</a></td>
+                                <td class="px-4 py-3">
+                                    <a href="${fotoLink}" target="_blank">
+                                        <img src="${fotoLink}" class="w-10 h-10 rounded-full object-cover border" alt="foto">
+                                    </a>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch(e) {
+                alert('Gagal ambil data');
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
