@@ -25,11 +25,53 @@
             <h1 class="text-3xl font-bold text-blue-600">Presensi Sekolah</h1>
             <p class="text-slate-500">Silakan login untuk memulai</p>
         </div>
-        <form onsubmit="event.preventDefault(); doLogin();" class="space-y-4">
-            <input type="email" id="login-email" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500" placeholder="Email" required>
-            <input type="password" id="login-pass" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500" placeholder="Password" required>
+        <form onsubmit="event.preventDefault(); doLogin();" class="space-y-5">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1 ml-1">EMAIL</label>
+                <input type="email" id="login-email" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 bg-slate-50" placeholder="nama@sekolah.id" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 mb-1 ml-1">PASSWORD</label>
+                <input type="password" id="login-pass" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 bg-slate-50" placeholder="******" required>
+            </div>
             <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition">Masuk</button>
         </form>
+        
+        <div class="mt-8 text-center border-t pt-6">
+            <p class="text-sm text-slate-400 mb-2">Belum punya akun?</p>
+            <button onclick="switchPage('page-register')" class="text-blue-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 w-full">
+                Buat Akun Baru <i class="ph ph-arrow-right"></i>
+            </button>
+        </div>
+    </section>
+
+    <section id="page-register" class="h-full flex flex-col justify-center px-6 bg-white hidden">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-800">Pendaftaran</h1>
+            <p class="text-xs text-slate-500">Isi data diri dengan benar sesuai identitas sekolah.</p>
+        </div>
+        <form onsubmit="event.preventDefault(); doRegister();" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Nama Lengkap & Gelar</label>
+                <input type="text" id="reg-nama" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500" placeholder="Contoh: Budi Santoso, S.Pd" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Jabatan / Posisi</label>
+                <input type="text" id="reg-jabatan" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500" placeholder="Contoh: Guru Matematika / Staff TU" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Email Sekolah / Pribadi</label>
+                <input type="email" id="reg-email" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500" placeholder="email@contoh.com" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Password</label>
+                <input type="password" id="reg-pass" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500" placeholder="Minimal 6 karakter" required>
+            </div>
+            <button type="submit" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg mt-4 shadow-lg">Daftar Sekarang</button>
+        </form>
+        <div class="mt-6 text-center">
+            <button onclick="switchPage('page-login')" class="text-sm text-blue-600 hover:underline">Kembali ke Login</button>
+        </div>
     </section>
 
     <section id="page-dashboard" class="h-full flex flex-col hidden relative">
@@ -128,8 +170,7 @@
                             <th class="p-3 text-right">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="history-list" class="divide-y divide-gray-50">
-                        </tbody>
+                    <tbody id="history-list" class="divide-y divide-gray-50"></tbody>
                 </table>
             </div>
         </div>
@@ -154,20 +195,19 @@
 
     <script>
         // --- KONFIGURASI ---
-        const API_URL = 'https://presensi-sekolah.presensi-muhjitos.workers.dev/'; // GANTI DENGAN URL WORKER ANDA
-        
-        // DUAL LOCATION ARRAY
+        const API_URL = 'https://presensi-sekolah.presensi-muhjitos.workers.dev/'; // URL WORKER ANDA
         const ALLOWED_LOCATIONS = [
             { lat: -7.554048413753806, lng: 110.74561465185563 },
             { lat: -7.716264089358359, lng: 110.58996812548884 }
         ];
-        const MAX_RADIUS = 750; // 750 Meter
+        const MAX_RADIUS = 750;
 
         let currentUser = null;
         let currentType = '';
         let videoStream = null;
         let currentDist = 9999;
         let globalStats = { sudah_masuk: false, sudah_pulang: false };
+        let currentHistoryType = '';
 
         window.onload = () => {
             const saved = localStorage.getItem('user_session');
@@ -187,31 +227,33 @@
             watchLocation();
         };
 
-        // --- RENDER DASHBOARD (LOGIC BARU) ---
+        function switchPage(id) {
+            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // --- DASHBOARD LOGIC ---
         function renderDashboard(user, stats) {
             globalStats = stats;
             document.getElementById('dash-nama').innerText = user.nama;
             document.getElementById('dash-jabatan').innerText = user.jabatan;
 
-            // 1. INFO MASUK (Harian)
+            // Info Masuk
             const boxMasuk = document.getElementById('box-masuk-val');
             if (stats.sudah_masuk) {
                 const jamMasuk = parseInt(stats.jam_masuk.split(':')[0]);
                 const menitMasuk = parseInt(stats.jam_masuk.split(':')[1]);
                 const totalMenitMasuk = (jamMasuk * 60) + menitMasuk;
-                const BATAS_MASUK = (7 * 60); // 07:00
+                const BATAS_MASUK = (7 * 60);
 
                 const selisih = totalMenitMasuk - BATAS_MASUK;
                 if (selisih > 0) {
-                    // Pakai formatDurationShort agar tampil "1 Jam 5 Mnt"
                     boxMasuk.innerHTML = `<span class="text-red-500 font-bold">Telat ${formatDurationShort(selisih)}</span>`;
                 } else if (selisih < 0) {
                     boxMasuk.innerHTML = `<span class="text-green-600 font-bold">Awal ${formatDurationShort(Math.abs(selisih))}</span>`;
                 } else {
                     boxMasuk.innerHTML = `<span class="text-green-600 font-bold">Tepat Waktu</span>`;
                 }
-                
-                // Update UI Tombol
                 document.getElementById('info-masuk').classList.remove('hidden');
                 document.getElementById('jam-absen-masuk').innerText = stats.jam_masuk;
                 document.getElementById('btn-masuk').innerText = "Sudah Masuk";
@@ -220,15 +262,16 @@
             } else {
                 boxMasuk.innerHTML = `<span class="text-slate-400 text-xs">Belum Absen</span>`;
                 document.getElementById('info-masuk').classList.add('hidden');
+                document.getElementById('btn-masuk').innerText = "Absen Masuk";
             }
 
-            // 2. INFO PULANG (Harian)
+            // Info Pulang
             const boxPulang = document.getElementById('box-pulang-val');
             if (stats.sudah_pulang) {
                 const jamPulang = parseInt(stats.jam_pulang.split(':')[0]);
                 const menitPulang = parseInt(stats.jam_pulang.split(':')[1]);
                 const totalMenitPulang = (jamPulang * 60) + menitPulang;
-                const BATAS_PULANG = (14 * 60); // 14:00
+                const BATAS_PULANG = (14 * 60);
 
                 const selisih = BATAS_PULANG - totalMenitPulang;
                 if (selisih > 0) {
@@ -243,37 +286,26 @@
             checkSchedule();
         }
 
-        // --- LOGIKA HISTORY ---
-        let currentHistoryType = ''; // Variable global baru utk simpan status modal
-
+        // --- HISTORY LOGIC ---
         function openHistory(type) {
             currentHistoryType = type;
             document.getElementById('history-modal').classList.remove('hidden');
-            
-            // Set Judul Modal
             document.getElementById('hist-title').innerText = type === 'MASUK' ? 'Detail Masuk' : 'Detail Pulang';
             document.getElementById('rekap-label').innerText = type === 'MASUK' ? 'Total Keterlambatan' : 'Total Pulang Awal';
 
-            // Auto Set Tanggal: Tanggal 1 Bulan Ini s/d Hari Ini (atau akhir bulan)
             const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
-            
-            // Hari pertama bulan ini
             const firstDay = `${year}-${month}-01`;
-            // Hari terakhir bulan ini (auto calc)
             const lastDayDate = new Date(year, now.getMonth() + 1, 0); 
             const lastDay = `${year}-${month}-${String(lastDayDate.getDate()).padStart(2,'0')}`;
 
             document.getElementById('hist-start').value = firstDay;
             document.getElementById('hist-end').value = lastDay;
-            
             loadHistory();
         }
 
-        function closeHistory() {
-            document.getElementById('history-modal').classList.add('hidden');
-        }
+        function closeHistory() { document.getElementById('history-modal').classList.add('hidden'); }
 
         async function loadHistory() {
             const tbody = document.getElementById('history-list');
@@ -282,7 +314,6 @@
             
             tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center">Loading...</td></tr>';
             elTotal.innerText = "...";
-            elCount.innerText = "0";
             
             const start = document.getElementById('hist-start').value;
             const end = document.getElementById('hist-end').value;
@@ -291,88 +322,60 @@
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        action: 'get_history', 
-                        email: currentUser.email,
-                        startDate: start,
-                        endDate: end,
-                        jenis: currentHistoryType // Kirim jenis (MASUK/PULANG) ke backend
-                    })
+                    body: JSON.stringify({ action: 'get_history', email: currentUser.email, startDate: start, endDate: end, jenis: currentHistoryType })
                 });
                 const json = await res.json();
                 tbody.innerHTML = '';
                 
                 if (json.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Tidak ada data pada periode ini</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Tidak ada data</td></tr>';
                     elTotal.innerText = "0 Menit";
+                    elCount.innerText = "0";
                     return;
                 }
 
-                let totalMenitMasalah = 0; // Keterlambatan atau Pulang Awal
+                let totalMenitMasalah = 0; 
                 let countMasalah = 0;
 
                 json.data.forEach(row => {
                     const d = new Date(row.timestamp);
                     const tgl = d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year: '2-digit'});
                     const jam = d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-                    
                     let statusHTML = "";
                     let isTrouble = false;
 
-                    // Logic Status & Warna
                     if (currentHistoryType === 'MASUK') {
                         if (row.status_waktu === 'TERLAMBAT') {
                             statusHTML = `<span class="text-red-500 font-bold">Telat ${formatDurationShort(row.menit_selisih)}</span>`;
                             totalMenitMasalah += row.menit_selisih;
                             isTrouble = true;
-                        } else {
-                            statusHTML = `<span class="text-green-600 font-bold">Tepat Waktu</span>`;
-                        }
-                    } else { // PULANG
+                        } else { statusHTML = `<span class="text-green-600 font-bold">Tepat</span>`; }
+                    } else { 
                         if (row.status_waktu === 'PULANG AWAL') {
                             statusHTML = `<span class="text-orange-500 font-bold">Awal ${formatDurationShort(row.menit_selisih)}</span>`;
                             totalMenitMasalah += row.menit_selisih;
                             isTrouble = true;
-                        } else {
-                            statusHTML = `<span class="text-blue-600 font-bold">Oke</span>`;
-                        }
+                        } else { statusHTML = `<span class="text-blue-600 font-bold">Oke</span>`; }
                     }
-
                     if(isTrouble) countMasalah++;
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 border-b last:border-0">
-                            <td class="p-3 text-gray-600 font-medium">${tgl}</td>
-                            <td class="p-3 font-bold text-gray-800">${jam}</td>
-                            <td class="p-3 text-right">${statusHTML}</td>
-                        </tr>
-                    `;
+                    tbody.innerHTML += `<tr class="hover:bg-gray-50 border-b last:border-0"><td class="p-3 text-gray-600 font-medium">${tgl}</td><td class="p-3 font-bold text-gray-800">${jam}</td><td class="p-3 text-right">${statusHTML}</td></tr>`;
                 });
-
-                // TAMPILKAN TOTAL REKAP (Konversi Menit -> Hari/Jam/Menit)
                 elTotal.innerText = formatDurationFull(totalMenitMasalah);
                 elCount.innerText = countMasalah;
-
-            } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Gagal load data</td></tr>';
-            }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Error</td></tr>'; }
         }
 
-        // --- LOCATION WATCHER (DUAL LOC) ---
+        // --- LOCATION & UTILS ---
         function watchLocation() {
             if(navigator.geolocation) {
                 navigator.geolocation.watchPosition(pos => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    
-                    // Cek jarak terdekat dari array lokasi
+                    const lat = pos.coords.latitude; const lng = pos.coords.longitude;
                     let minDistance = Infinity;
                     ALLOWED_LOCATIONS.forEach(loc => {
                         const d = getDistance(lat, lng, loc.lat, loc.lng);
                         if(d < minDistance) minDistance = d;
                     });
                     currentDist = minDistance;
-                    
                     const elStatus = document.getElementById('loc-status');
                     if(currentDist > MAX_RADIUS) {
                         elStatus.innerText = `Luar Area (${Math.round(currentDist)}m)`;
@@ -385,8 +388,6 @@
                 }, err => {}, { enableHighAccuracy: true });
             }
         }
-
-        // --- HELPER LAINNYA ---
         function updateClock() {
             const now = new Date();
             document.getElementById('dash-clock').innerText = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
@@ -394,94 +395,71 @@
         }
         function checkSchedule() {
             const now = new Date();
-            const hour = now.getHours();
-            const day = now.getDay();
-            const btnMasuk = document.getElementById('btn-masuk');
-            const btnPulang = document.getElementById('btn-pulang');
+            const hour = now.getHours(); const day = now.getDay();
+            const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang');
             if(!btnMasuk || !btnPulang) return;
-
-            let isClosed = false;
-            let msg = "";
+            let isClosed = false; let msg = "";
             if (day === 0) { isClosed = true; msg = "LIBUR (MINGGU)"; }
             else if (hour < 6 || hour >= 18) { isClosed = true; msg = "TUTUP (06:00-18:00)"; }
-
+            
             if (isClosed) {
                 const styleClosed = "w-full bg-slate-400 text-white p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed";
                 btnMasuk.disabled = true; btnMasuk.innerText = msg; btnMasuk.className = styleClosed;
                 btnPulang.disabled = true; btnPulang.innerText = msg; btnPulang.className = styleClosed;
-            } else {
-                updateButtonState(); // Cek jarak & status absen
-            }
+            } else { updateButtonState(); }
         }
         function updateButtonState() {
-            const btnMasuk = document.getElementById('btn-masuk');
-            const btnPulang = document.getElementById('btn-pulang');
+            const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang');
             const styleActiveMasuk = "w-full bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2";
             const styleActivePulang = "w-full bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2";
             const styleDisabled = "w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed";
-
             if(currentDist > MAX_RADIUS) {
                 if(!globalStats.sudah_masuk) { btnMasuk.className = styleDisabled; btnMasuk.disabled = true; }
-                btnPulang.className = styleDisabled; btnPulang.disabled = true;
-                return;
+                btnPulang.className = styleDisabled; btnPulang.disabled = true; return;
             }
-            if(!globalStats.sudah_masuk) {
-                btnMasuk.className = styleActiveMasuk; btnMasuk.disabled = false; btnMasuk.innerText = "Absen Masuk";
-            }
+            if(!globalStats.sudah_masuk) { btnMasuk.className = styleActiveMasuk; btnMasuk.disabled = false; btnMasuk.innerText = "Absen Masuk"; }
             btnPulang.className = styleActivePulang; btnPulang.disabled = false; btnPulang.innerText = "Absen Pulang";
         }
+        function formatDurationFull(minutes) {
+            if (!minutes || minutes <= 0) return "0 Menit";
+            const days = Math.floor(minutes / 1440); minutes %= 1440;
+            const hours = Math.floor(minutes / 60); const mins = minutes % 60;
+            let result = ""; if (days > 0) result += `${days} Hari `; if (hours > 0) result += `${hours} Jam `; if (mins > 0) result += `${mins} Menit`;
+            return result.trim();
+        }
+        function formatDurationShort(minutes) {
+            if (!minutes || minutes <= 0) return "0 Mnt";
+            const h = Math.floor(minutes / 60); const m = minutes % 60;
+            if (h > 0) return `${h} Jam ${m} Mnt`; return `${m} Mnt`;
+        }
         function doLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            fetch(API_URL, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: 'login', email: email, password: pass })
-            }).then(r=>r.json()).then(res=>{
-                if(res.status==='success'){
-                    currentUser=res.data;
-                    localStorage.setItem('user_session', JSON.stringify({user:res.data, stats:res.stats}));
-                    renderDashboard(res.data, res.stats);
-                    document.getElementById('page-login').classList.add('hidden');
-                    document.getElementById('page-dashboard').classList.remove('hidden');
-                } else alert(res.message);
-            }).catch(e=>alert('Gagal koneksi'));
+            const email = document.getElementById('login-email').value; const pass = document.getElementById('login-pass').value;
+            fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'login', email: email, password: pass }) })
+            .then(r=>r.json()).then(res=>{ if(res.status==='success'){ currentUser=res.data; localStorage.setItem('user_session', JSON.stringify({user:res.data, stats:res.stats})); renderDashboard(res.data, res.stats); switchPage('page-dashboard'); } else alert(res.message); }).catch(e=>alert('Gagal koneksi'));
+        }
+        function doRegister() {
+             const data = { action: 'register', nama: document.getElementById('reg-nama').value, jabatan: document.getElementById('reg-jabatan').value, email: document.getElementById('reg-email').value, password: document.getElementById('reg-pass').value };
+            fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+            .then(res => res.json()).then(res => { if(res.status === 'success') { alert('Berhasil daftar!'); switchPage('page-login'); } else { alert(res.message); } }).catch(e => alert('Gagal daftar'));
         }
         function refreshData(email) {
-            fetch(API_URL, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: 'refresh_data', email: email })
-            }).then(r=>r.json()).then(res=>{
-                if(res.status==='success'){
-                    const sess = JSON.parse(localStorage.getItem('user_session'));
-                    sess.stats = res.stats;
-                    localStorage.setItem('user_session', JSON.stringify(sess));
-                    renderDashboard(currentUser, res.stats);
-                }
-            });
+            fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'refresh_data', email: email }) })
+            .then(r=>r.json()).then(res=>{ if(res.status==='success'){ const sess = JSON.parse(localStorage.getItem('user_session')); sess.stats = res.stats; localStorage.setItem('user_session', JSON.stringify(sess)); renderDashboard(currentUser, res.stats); }});
         }
         function doLogout() { if(confirm('Keluar?')) { localStorage.removeItem('user_session'); location.reload(); } }
         async function openCamera(type) {
-            if(type==='MASUK' && globalStats.sudah_masuk) return;
-            if(currentDist > MAX_RADIUS) { alert('Kejauhan!'); return; }
+            if(type==='MASUK' && globalStats.sudah_masuk) return; if(currentDist > MAX_RADIUS) { alert('Kejauhan!'); return; }
             currentType=type; document.getElementById('camera-modal').classList.remove('hidden');
             try { videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); document.getElementById('video-feed').srcObject = videoStream; } catch(e){alert('Kamera error');closeCamera();}
         }
         function closeCamera() { document.getElementById('camera-modal').classList.add('hidden'); if(videoStream) videoStream.getTracks().forEach(t=>t.stop()); }
         function captureAndSend() {
-            const v=document.getElementById('video-feed'); const c=document.getElementById('canvas-capture');
-            c.width=v.videoWidth; c.height=v.videoHeight; const ctx=c.getContext('2d');
-            ctx.translate(c.width, 0); ctx.scale(-1, 1); ctx.drawImage(v,0,0);
-            const foto=c.toDataURL('image/jpeg',0.5); closeCamera();
+            const v=document.getElementById('video-feed'); const c=document.getElementById('canvas-capture'); c.width=v.videoWidth; c.height=v.videoHeight;
+            const ctx=c.getContext('2d'); ctx.translate(c.width, 0); ctx.scale(-1, 1); ctx.drawImage(v,0,0); const foto=c.toDataURL('image/jpeg',0.5); closeCamera();
             document.getElementById('loader').classList.remove('hidden');
             navigator.geolocation.getCurrentPosition(pos=>{
-                fetch(API_URL,{
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({action:'absen', nama:currentUser.nama, email:currentUser.email, jenis:currentType, lat:pos.coords.latitude, long:pos.coords.longitude, foto:foto})
-                }).then(r=>r.json()).then(res=>{
-                    document.getElementById('loader').classList.add('hidden');
-                    if(res.status==='success') { alert('Berhasil!'); refreshData(currentUser.email); }
-                    else alert(res.message);
-                }).catch(e=>{document.getElementById('loader').classList.add('hidden'); alert('Gagal kirim');});
+                fetch(API_URL,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'absen', nama:currentUser.nama, email:currentUser.email, jenis:currentType, lat:pos.coords.latitude, long:pos.coords.longitude, foto:foto}) })
+                .then(r=>r.json()).then(res=>{ document.getElementById('loader').classList.add('hidden'); if(res.status==='success') { alert('Berhasil!'); refreshData(currentUser.email); } else alert(res.message); }).catch(e=>{document.getElementById('loader').classList.add('hidden'); alert('Gagal kirim');});
             });
         }
         function getDistance(lat1, lon1, lat2, lon2) {
@@ -490,39 +468,6 @@
             const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
-
-        // Fungsi konversi Menit ke "X Hari Y Jam Z Menit"
-        function formatDurationFull(minutes) {
-            if (!minutes || minutes <= 0) return "0 Menit";
-            
-            let sisa = minutes;
-            // Asumsi: 1 Hari kerja "keterlambatan" dalam konteks akumulasi 
-            // biasanya dihitung 24 jam atau jam kerja? 
-            // Standarnya kita pakai konversi waktu murni: 1 Hari = 24 Jam (1440 menit)
-            const days = Math.floor(sisa / 1440);
-            sisa %= 1440;
-            
-            const hours = Math.floor(sisa / 60);
-            const mins = sisa % 60;
-
-            let result = "";
-            if (days > 0) result += `${days} Hari `;
-            if (hours > 0) result += `${hours} Jam `;
-            if (mins > 0) result += `${mins} Menit`;
-            
-            return result.trim();
-        }
-
-        // Fungsi konversi pendek untuk Dashboard (misal: "1 Jam 5 Mnt")
-        function formatDurationShort(minutes) {
-            if (!minutes || minutes <= 0) return "0 Mnt";
-            const h = Math.floor(minutes / 60);
-            const m = minutes % 60;
-            if (h > 0) return `${h} Jam ${m} Mnt`;
-            return `${m} Mnt`;
-        }
     </script>
 </body>
 </html>
-
-
