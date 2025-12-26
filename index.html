@@ -16,13 +16,7 @@
         .hidden { display: none !important; }
         video { transform: scaleX(-1); }
         .btn-disabled { background-color: #cbd5e1 !important; color: #64748b !important; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-        
-        /* Animasi Pulse untuk indikator GPS */
-        @keyframes pulse-red {
-            0%, 100% { background-color: rgba(220, 38, 38, 0.8); }
-            50% { background-color: rgba(220, 38, 38, 0.5); }
-        }
-        .bg-pulse-red { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0%, 100% { background-color: rgba(220, 38, 38, 0.8); } 50% { background-color: rgba(220, 38, 38, 0.5); } }
     </style>
 </head>
 <body class="bg-gray-50 text-slate-800 h-screen overflow-hidden relative">
@@ -35,20 +29,11 @@
             <div class="mt-2 w-16 h-1 bg-blue-600 mx-auto rounded-full"></div>
         </div>
         <form onsubmit="event.preventDefault(); doLogin();" class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold text-slate-400 mb-1 ml-1">EMAIL</label>
-                <input type="email" id="login-email" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 bg-slate-50" placeholder="nama@sekolah.id" required>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-400 mb-1 ml-1">PASSWORD</label>
-                <input type="password" id="login-pass" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 bg-slate-50" placeholder="******" required>
-            </div>
+            <div><label class="block text-xs font-bold text-slate-400 mb-1 ml-1">EMAIL</label><input type="email" id="login-email" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 bg-slate-50" placeholder="nama@sekolah.id" required></div>
+            <div><label class="block text-xs font-bold text-slate-400 mb-1 ml-1">PASSWORD</label><input type="password" id="login-pass" class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 bg-slate-50" placeholder="******" required></div>
             <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition hover:bg-blue-700">Masuk Aplikasi</button>
         </form>
-        <div class="mt-8 text-center border-t pt-6">
-            <p class="text-sm text-slate-400 mb-2">Guru / Karyawan Baru?</p>
-            <button onclick="switchPage('page-register')" class="text-blue-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 w-full">Registrasi Akun <i class="ph ph-arrow-right"></i></button>
-        </div>
+        <div class="mt-8 text-center border-t pt-6"><p class="text-sm text-slate-400 mb-2">Guru / Karyawan Baru?</p><button onclick="switchPage('page-register')" class="text-blue-600 font-bold text-sm hover:underline flex items-center justify-center gap-1 w-full">Registrasi Akun <i class="ph ph-arrow-right"></i></button></div>
     </section>
 
     <section id="page-register" class="h-full flex flex-col justify-center px-6 bg-white hidden">
@@ -75,13 +60,12 @@
             </div>
             <div class="flex justify-between items-start mb-6">
                 <div><p class="text-xs text-blue-200 mb-1">Selamat Datang,</p><h2 class="font-bold text-lg leading-tight" id="dash-nama">Loading...</h2><span class="text-[10px] bg-blue-700 px-2 py-0.5 rounded text-blue-100 mt-1 inline-block" id="dash-jabatan">...</span></div>
-                <button onclick="doLogout()" class="bg-blue-500 p-2 rounded-full hover:bg-blue-400 transition shadow-lg"><i class="ph ph-sign-out text-xl"></i></button>
+                <div class="flex gap-2">
+                    <button onclick="openProfile()" class="bg-blue-500 p-2 rounded-full hover:bg-blue-400 transition shadow-lg"><i class="ph ph-user text-xl"></i></button>
+                    <button onclick="doLogout()" class="bg-red-500 p-2 rounded-full hover:bg-red-400 transition shadow-lg"><i class="ph ph-sign-out text-xl"></i></button>
+                </div>
             </div>
-            
-            <div id="loc-container" class="flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm border border-blue-500/30 transition-colors duration-300">
-                <i id="loc-icon" class="ph ph-spinner animate-spin text-yellow-300"></i>
-                <span id="loc-status">Mencari Lokasi...</span>
-            </div>
+            <div id="loc-container" class="flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm border border-blue-500/30 transition-colors duration-300"><i id="loc-icon" class="ph ph-spinner animate-spin text-yellow-300"></i><span id="loc-status">Mencari Lokasi...</span></div>
         </div>
 
         <div class="px-6 -mt-10 pb-6 flex-1 overflow-y-auto space-y-4 z-20">
@@ -102,19 +86,72 @@
 
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div class="flex justify-between items-center mb-2"><span class="font-bold text-slate-700">Presensi Masuk</span><span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">07:00 WIB</span></div>
-                <button onclick="openCamera('MASUK')" id="btn-masuk" class="w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed" disabled>
-                    <i class="ph ph-spinner animate-spin"></i> Menunggu GPS...
-                </button>
+                <button onclick="openCamera('MASUK')" id="btn-masuk" class="w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed" disabled><i class="ph ph-spinner animate-spin"></i> Menunggu GPS...</button>
                 <div id="info-masuk" class="hidden mt-2 text-xs text-center text-emerald-600 font-medium">Sudah absen pukul <span id="jam-absen-masuk"></span></div>
             </div>
 
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div class="flex justify-between items-center mb-2"><span class="font-bold text-slate-700">Presensi Pulang</span><span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">14:00 WIB</span></div>
-                <button onclick="openCamera('PULANG')" id="btn-pulang" class="w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed" disabled>
-                    <i class="ph ph-spinner animate-spin"></i> Menunggu GPS...
-                </button>
+                <button onclick="openCamera('PULANG')" id="btn-pulang" class="w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed" disabled><i class="ph ph-spinner animate-spin"></i> Menunggu GPS...</button>
             </div>
             <div class="text-center pb-4"><p class="text-[10px] text-slate-300">© SMP Muhammadiyah 1 Kartasura</p></div>
+        </div>
+    </section>
+
+    <section id="page-profile" class="h-full flex flex-col hidden bg-gray-50 overflow-y-auto pb-10">
+        <div class="bg-white px-6 pt-6 pb-4 shadow-sm sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button onclick="switchPage('page-dashboard')" class="text-slate-500 hover:text-blue-600"><i class="ph ph-arrow-left text-xl"></i></button>
+                <h1 class="text-lg font-bold text-slate-800">Profil Pengguna</h1>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="font-bold text-blue-600 mb-4 flex items-center gap-2"><i class="ph ph-identification-card text-xl"></i> Data Pribadi</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Nama Lengkap</label><input type="text" id="prof-nama" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Jabatan</label><input type="text" id="prof-jabatan" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Jenis Kelamin</label>
+                        <select id="prof-jk" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium bg-transparent">
+                            <option value="">- Pilih -</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option>
+                        </select>
+                    </div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Tempat Lahir</label><input type="text" id="prof-tempat-lahir" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Tanggal Lahir</label><input type="date" id="prof-tgl-lahir" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Alamat Lengkap</label><textarea id="prof-alamat" rows="2" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></textarea></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="font-bold text-emerald-600 mb-4 flex items-center gap-2"><i class="ph ph-briefcase text-xl"></i> Data Kepegawaian</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">NIP / NIY</label><input type="text" id="prof-nip" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">NBM (Muhammadiyah)</label><input type="text" id="prof-nbm" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Nomor KTP (NIK)</label><input type="number" id="prof-nik" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">NPWP</label><input type="text" id="prof-npwp" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="font-bold text-orange-600 mb-4 flex items-center gap-2"><i class="ph ph-address-book text-xl"></i> Kontak & Rekening</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Email</label><input type="email" id="prof-email" class="w-full border-b py-1 text-sm font-medium text-slate-500 bg-slate-50" readonly></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Nomor HP / WA</label><input type="tel" id="prof-hp" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium"></div>
+                    <div><label class="text-[10px] uppercase font-bold text-slate-400">Nomor Rekening Bank</label><input type="text" id="prof-rek" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium" placeholder="Nama Bank - No Rekening"></div>
+                </div>
+            </div>
+
+            <button onclick="saveProfile()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition">SIMPAN PERUBAHAN</button>
+
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 mt-8">
+                <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><i class="ph ph-lock-key text-xl"></i> Ganti Password</h2>
+                <div class="space-y-3">
+                    <input type="password" id="pass-old" placeholder="Password Lama" class="w-full px-4 py-2 border rounded text-sm">
+                    <input type="password" id="pass-new" placeholder="Password Baru" class="w-full px-4 py-2 border rounded text-sm">
+                    <button onclick="changePassword()" class="w-full bg-slate-800 text-white font-bold py-2 rounded text-sm">Update Password</button>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -153,7 +190,7 @@
         const MAX_RADIUS = 750;
 
         let currentUser = null; let currentType = ''; let videoStream = null; 
-        let currentDist = 9999; let isGpsLocked = false; // Flag GPS Locked
+        let currentDist = 9999; let isGpsLocked = false; 
         let globalStats = { sudah_masuk: false, sudah_pulang: false }; let currentHistoryType = '';
 
         window.onload = () => {
@@ -171,11 +208,81 @@
         function switchPage(id) { document.querySelectorAll('section').forEach(el => el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
         function setLoading(show, txt) { const el = document.getElementById('loader'); if(show) { document.getElementById('loader-text').innerText = txt; el.classList.remove('hidden'); } else el.classList.add('hidden'); }
 
+        // --- PROFIL LOGIC (BARU) ---
+        function openProfile() {
+            switchPage('page-profile');
+            // Isi form dengan data currentUser
+            document.getElementById('prof-nama').value = currentUser.nama || '';
+            document.getElementById('prof-jabatan').value = currentUser.jabatan || '';
+            document.getElementById('prof-email').value = currentUser.email || '';
+            
+            document.getElementById('prof-jk').value = currentUser.jenis_kelamin || '';
+            document.getElementById('prof-alamat').value = currentUser.alamat || '';
+            document.getElementById('prof-tempat-lahir').value = currentUser.tempat_lahir || '';
+            document.getElementById('prof-tgl-lahir').value = currentUser.tanggal_lahir || '';
+            document.getElementById('prof-nip').value = currentUser.nip || '';
+            document.getElementById('prof-nbm').value = currentUser.nbm || '';
+            document.getElementById('prof-nik').value = currentUser.nik || '';
+            document.getElementById('prof-npwp').value = currentUser.npwp || '';
+            document.getElementById('prof-hp').value = currentUser.no_hp || '';
+            document.getElementById('prof-rek').value = currentUser.no_rekening || '';
+        }
+
+        function saveProfile() {
+            const data = {
+                action: 'update_profile',
+                email: currentUser.email, // Key utama
+                nama: document.getElementById('prof-nama').value,
+                jabatan: document.getElementById('prof-jabatan').value,
+                jenis_kelamin: document.getElementById('prof-jk').value,
+                alamat: document.getElementById('prof-alamat').value,
+                tempat_lahir: document.getElementById('prof-tempat-lahir').value,
+                tanggal_lahir: document.getElementById('prof-tgl-lahir').value,
+                nip: document.getElementById('prof-nip').value,
+                nbm: document.getElementById('prof-nbm').value,
+                nik: document.getElementById('prof-nik').value,
+                npwp: document.getElementById('prof-npwp').value,
+                no_hp: document.getElementById('prof-hp').value,
+                no_rekening: document.getElementById('prof-rek').value
+            };
+            setLoading(true, "Menyimpan Profil...");
+            fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
+            .then(r => r.json()).then(res => {
+                setLoading(false);
+                if(res.status === 'success') {
+                    alert('Profil Berhasil Diupdate!');
+                    // Update session lokal
+                    currentUser = res.data; // Server harus return data user terbaru
+                    const sess = JSON.parse(localStorage.getItem('user_session'));
+                    sess.user = currentUser;
+                    localStorage.setItem('user_session', JSON.stringify(sess));
+                    renderDashboard(currentUser, sess.stats); // Refresh nama di dashboard
+                } else { alert(res.message); }
+            }).catch(e => { setLoading(false); alert('Gagal koneksi'); });
+        }
+
+        function changePassword() {
+            const oldP = document.getElementById('pass-old').value;
+            const newP = document.getElementById('pass-new').value;
+            if(!oldP || !newP) return alert('Isi password lama dan baru!');
+            if(newP.length < 6) return alert('Password baru minimal 6 karakter');
+            
+            setLoading(true, "Mengganti Password...");
+            fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'change_password', email: currentUser.email, oldPassword: oldP, newPassword: newP }) })
+            .then(r => r.json()).then(res => {
+                setLoading(false);
+                if(res.status === 'success') {
+                    alert('Password Berhasil Diganti! Silakan Login Ulang.');
+                    localStorage.removeItem('user_session');
+                    location.reload();
+                } else { alert(res.message); }
+            }).catch(e => { setLoading(false); alert('Gagal koneksi'); });
+        }
+
         function renderDashboard(user, stats) {
             globalStats = stats;
             document.getElementById('dash-nama').innerText = user.nama; document.getElementById('dash-jabatan').innerText = user.jabatan;
 
-            // Masuk
             const boxMasuk = document.getElementById('box-masuk-val');
             if (stats.sudah_masuk) {
                 const jamM = parseInt(stats.jam_masuk.split(':')[0]); const mntM = parseInt(stats.jam_masuk.split(':')[1]);
@@ -183,7 +290,6 @@
                 if (selisih > 0) boxMasuk.innerHTML = `<span class="text-red-500 font-bold">Telat ${formatDurationShort(selisih)}</span>`;
                 else if (selisih < 0) boxMasuk.innerHTML = `<span class="text-green-600 font-bold">Awal ${formatDurationShort(Math.abs(selisih))}</span>`;
                 else boxMasuk.innerHTML = `<span class="text-green-600 font-bold">Tepat Waktu</span>`;
-                
                 document.getElementById('info-masuk').classList.remove('hidden');
                 document.getElementById('jam-absen-masuk').innerText = stats.jam_masuk;
                 document.getElementById('btn-masuk').innerHTML = `<i class="ph ph-check-circle text-lg"></i> Sudah Masuk`;
@@ -195,7 +301,6 @@
                 document.getElementById('btn-masuk').innerHTML = `<i class="ph ph-camera text-lg"></i> Absen Masuk`;
             }
 
-            // Pulang
             const boxPulang = document.getElementById('box-pulang-val');
             if (stats.sudah_pulang) {
                 const jamP = parseInt(stats.jam_pulang.split(':')[0]); const mntP = parseInt(stats.jam_pulang.split(':')[1]);
@@ -205,121 +310,32 @@
             } else {
                 boxPulang.innerHTML = `<span class="text-slate-400 text-xs">Belum Pulang</span>`;
             }
-            // Panggil cek jadwal, tapi jangan timpa status GPS
             if(isGpsLocked) checkSchedule();
         }
 
-        // --- LOCATION LOGIC (DIPERBAIKI) ---
+        // --- LOGIC LAINNYA (SAMA SEPERTI SEBELUMNYA) ---
         function watchLocation() {
             if(navigator.geolocation) {
                 navigator.geolocation.watchPosition(
-                    // SUCCESS
                     pos => {
                         const lat = pos.coords.latitude; const lng = pos.coords.longitude;
                         let minDistance = Infinity;
-                        ALLOWED_LOCATIONS.forEach(loc => {
-                            const d = getDistance(lat, lng, loc.lat, loc.lng);
-                            if(d < minDistance) minDistance = d;
-                        });
-                        currentDist = minDistance;
-                        isGpsLocked = true;
-                        
-                        // Update UI Lokasi
-                        const container = document.getElementById('loc-container');
-                        const icon = document.getElementById('loc-icon');
-                        const status = document.getElementById('loc-status');
-                        
-                        if(currentDist > MAX_RADIUS) {
-                            status.innerText = `Luar Area (${Math.round(currentDist)}m)`;
-                            container.className = "flex items-center gap-2 text-xs bg-red-600/80 text-white p-2 rounded-lg inline-flex backdrop-blur-sm border border-red-400 shadow-md transition-colors duration-300";
-                            icon.className = "ph ph-warning-circle text-white animate-pulse";
-                        } else {
-                            status.innerText = `Dalam Area (${Math.round(currentDist)}m)`;
-                            container.className = "flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm border border-blue-500/30 transition-colors duration-300";
-                            icon.className = "ph ph-map-pin text-yellow-300";
-                        }
-                        checkSchedule(); // Update tombol berdasarkan jarak
+                        ALLOWED_LOCATIONS.forEach(loc => { const d = getDistance(lat, lng, loc.lat, loc.lng); if(d < minDistance) minDistance = d; });
+                        currentDist = minDistance; isGpsLocked = true;
+                        const container = document.getElementById('loc-container'); const icon = document.getElementById('loc-icon'); const status = document.getElementById('loc-status');
+                        if(currentDist > MAX_RADIUS) { status.innerText = `Luar Area (${Math.round(currentDist)}m)`; container.className = "flex items-center gap-2 text-xs bg-red-600/80 text-white p-2 rounded-lg inline-flex backdrop-blur-sm border border-red-400 shadow-md transition-colors duration-300"; icon.className = "ph ph-warning-circle text-white animate-pulse"; } 
+                        else { status.innerText = `Dalam Area (${Math.round(currentDist)}m)`; container.className = "flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm border border-blue-500/30 transition-colors duration-300"; icon.className = "ph ph-map-pin text-yellow-300"; }
+                        checkSchedule();
                     }, 
-                    // ERROR
-                    err => {
-                        handleGpsError();
-                    }, 
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    err => { handleGpsError(); }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
-            } else {
-                handleGpsError();
-            }
+            } else { handleGpsError(); }
         }
-
-        function handleGpsError() {
-            isGpsLocked = false;
-            const container = document.getElementById('loc-container');
-            const icon = document.getElementById('loc-icon');
-            const status = document.getElementById('loc-status');
-            
-            status.innerText = "GPS Mati / Ditolak";
-            container.className = "flex items-center gap-2 text-xs bg-red-600 text-white p-2 rounded-lg inline-flex shadow-lg animate-pulse";
-            icon.className = "ph ph-x-circle text-white";
-            
-            disableButtons("⚠️ Aktifkan GPS");
-        }
-
-        function disableButtons(msg) {
-            const btnMasuk = document.getElementById('btn-masuk');
-            const btnPulang = document.getElementById('btn-pulang');
-            const styleDisabled = "w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed";
-            
-            if(!globalStats.sudah_masuk) {
-                btnMasuk.className = styleDisabled; btnMasuk.disabled = true; btnMasuk.innerHTML = `<i class="ph ph-warning"></i> ${msg}`;
-            }
-            btnPulang.className = styleDisabled; btnPulang.disabled = true; btnPulang.innerHTML = `<i class="ph ph-warning"></i> ${msg}`;
-        }
-
-        function checkSchedule() {
-            // Jika GPS belum lock, jangan jalankan logika jadwal dulu (biar warning GPS tetap muncul)
-            if(!isGpsLocked) return;
-
-            const now = new Date(); const hour = now.getHours(); const day = now.getDay();
-            const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang');
-            if(!btnMasuk || !btnPulang) return;
-            
-            let isClosed = false; let msg = "";
-            if (day === 0) { isClosed = true; msg = "LIBUR (MINGGU)"; }
-            else if (hour < 6 || hour >= 18) { isClosed = true; msg = "TUTUP (06:00-18:00)"; }
-            
-            if (isClosed) {
-                const styleClosed = "w-full bg-slate-400 text-white p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed";
-                btnMasuk.disabled = true; btnMasuk.innerText = msg; btnMasuk.className = styleClosed;
-                btnPulang.disabled = true; btnPulang.innerText = msg; btnPulang.className = styleClosed;
-            } else { 
-                updateButtonState(); 
-            }
-        }
-
-        function updateButtonState() {
-            const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang');
-            const styleActiveMasuk = "w-full bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2";
-            const styleActivePulang = "w-full bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2";
-            const styleDisabled = "w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed";
-            
-            // Jarak Jauh
-            if(currentDist > MAX_RADIUS) {
-                if(!globalStats.sudah_masuk) { 
-                    btnMasuk.className = styleDisabled; btnMasuk.disabled = true; btnMasuk.innerText = "Lokasi Kejauhan";
-                }
-                btnPulang.className = styleDisabled; btnPulang.disabled = true; btnPulang.innerText = "Lokasi Kejauhan";
-                return;
-            }
-            
-            // Jarak Aman
-            if(!globalStats.sudah_masuk) { 
-                btnMasuk.className = styleActiveMasuk; btnMasuk.disabled = false; btnMasuk.innerHTML = `<i class="ph ph-camera text-lg"></i> Absen Masuk`;
-            }
-            btnPulang.className = styleActivePulang; btnPulang.disabled = false; btnPulang.innerHTML = `<i class="ph ph-camera text-lg"></i> Absen Pulang`;
-        }
-
-        // --- Helper functions (Login, Register, dsb) TETAP SAMA ---
-        async function refreshData(email) { try { const res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'refresh_data', email: email }) }); const json = await res.json(); if(json.status==='success'){ const sess = JSON.parse(localStorage.getItem('user_session')); sess.stats = json.stats; localStorage.setItem('user_session', JSON.stringify(sess)); renderDashboard(currentUser, json.stats); } } catch(e) { console.log('Refresh failed'); } }
+        function handleGpsError() { isGpsLocked = false; const container = document.getElementById('loc-container'); const icon = document.getElementById('loc-icon'); const status = document.getElementById('loc-status'); status.innerText = "GPS Mati / Ditolak"; container.className = "flex items-center gap-2 text-xs bg-red-600 text-white p-2 rounded-lg inline-flex shadow-lg animate-pulse"; icon.className = "ph ph-x-circle text-white"; disableButtons("⚠️ Aktifkan GPS"); }
+        function disableButtons(msg) { const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang'); const styleDisabled = "w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed"; if(!globalStats.sudah_masuk) { btnMasuk.className = styleDisabled; btnMasuk.disabled = true; btnMasuk.innerHTML = `<i class="ph ph-warning"></i> ${msg}`; } btnPulang.className = styleDisabled; btnPulang.disabled = true; btnPulang.innerHTML = `<i class="ph ph-warning"></i> ${msg}`; }
+        function checkSchedule() { if(!isGpsLocked) return; const now = new Date(); const hour = now.getHours(); const day = now.getDay(); const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang'); if(!btnMasuk || !btnPulang) return; let isClosed = false; let msg = ""; if (day === 0) { isClosed = true; msg = "LIBUR (MINGGU)"; } else if (hour < 6 || hour >= 18) { isClosed = true; msg = "TUTUP (06:00-18:00)"; } if (isClosed) { const styleClosed = "w-full bg-slate-400 text-white p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed"; btnMasuk.disabled = true; btnMasuk.innerText = msg; btnMasuk.className = styleClosed; btnPulang.disabled = true; btnPulang.innerText = msg; btnPulang.className = styleClosed; } else { updateButtonState(); } }
+        function updateButtonState() { const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang'); const styleActiveMasuk = "w-full bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2"; const styleActivePulang = "w-full bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2"; const styleDisabled = "w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed"; if(currentDist > MAX_RADIUS) { if(!globalStats.sudah_masuk) { btnMasuk.className = styleDisabled; btnMasuk.disabled = true; btnMasuk.innerText = "Lokasi Kejauhan"; } btnPulang.className = styleDisabled; btnPulang.disabled = true; btnPulang.innerText = "Lokasi Kejauhan"; return; } if(!globalStats.sudah_masuk) { btnMasuk.className = styleActiveMasuk; btnMasuk.disabled = false; btnMasuk.innerHTML = `<i class="ph ph-camera text-lg"></i> Absen Masuk`; } btnPulang.className = styleActivePulang; btnPulang.disabled = false; btnPulang.innerHTML = `<i class="ph ph-camera text-lg"></i> Absen Pulang`; }
+        async function refreshData(email) { try { const res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'refresh_data', email: email }) }); const json = await res.json(); if(json.status==='success'){ const sess = JSON.parse(localStorage.getItem('user_session')); sess.stats = json.stats; sess.user = json.user; localStorage.setItem('user_session', JSON.stringify(sess)); currentUser = json.user; renderDashboard(currentUser, json.stats); } } catch(e) { console.log('Refresh failed'); } }
         function captureAndSend() { const v=document.getElementById('video-feed'); const c=document.getElementById('canvas-capture'); c.width=v.videoWidth; c.height=v.videoHeight; const ctx=c.getContext('2d'); ctx.translate(c.width, 0); ctx.scale(-1, 1); ctx.drawImage(v,0,0); const foto=c.toDataURL('image/jpeg',0.5); closeCamera(); setLoading(true, "Mengirim Presensi..."); navigator.geolocation.getCurrentPosition(pos=>{ fetch(API_URL,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'absen', nama:currentUser.nama, email:currentUser.email, jenis:currentType, lat:pos.coords.latitude, long:pos.coords.longitude, foto:foto}) }).then(r=>r.json()).then(res=>{ setLoading(false); if(res.status==='success') { alert('Berhasil!'); refreshData(currentUser.email); } else alert(res.message); }).catch(e=>{setLoading(false); alert('Gagal kirim');}); }); }
         
         function doLogin() { const email = document.getElementById('login-email').value; const pass = document.getElementById('login-pass').value; setLoading(true, "Sedang Masuk..."); fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'login', email: email, password: pass }) }).then(r=>r.json()).then(res=>{ setLoading(false); if(res.status==='success'){ currentUser=res.data; localStorage.setItem('user_session', JSON.stringify({user:res.data, stats:res.stats})); renderDashboard(res.data, res.stats); switchPage('page-dashboard'); } else alert(res.message); }).catch(e=>{setLoading(false);alert('Gagal koneksi');}); }
@@ -339,4 +355,3 @@
     </script>
 </body>
 </html>
-
