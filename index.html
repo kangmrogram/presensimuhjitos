@@ -92,28 +92,43 @@
     </section>
 
     <div id="history-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end sm:items-center justify-center">
-        <div class="bg-white w-full sm:w-96 rounded-t-2xl sm:rounded-2xl p-5 max-h-[80vh] flex flex-col animate-slide-up">
+        <div class="bg-white w-full sm:w-[500px] rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] flex flex-col animate-slide-up">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="font-bold text-lg text-slate-800">Riwayat Presensi</h3>
-                <button onclick="document.getElementById('history-modal').classList.add('hidden')" class="text-slate-400 hover:text-red-500"><i class="ph ph-x text-2xl"></i></button>
+                <div>
+                    <h3 class="font-bold text-lg text-slate-800" id="hist-title">Riwayat</h3>
+                    <p class="text-[10px] text-slate-400">Rekapitulasi data bulanan</p>
+                </div>
+                <button onclick="closeHistory()" class="text-slate-400 hover:text-red-500 bg-gray-100 p-2 rounded-full"><i class="ph ph-x text-xl"></i></button>
             </div>
             
-            <div class="flex gap-2 mb-4">
-                <input type="date" id="hist-start" class="w-full border rounded p-1 text-xs">
-                <input type="date" id="hist-end" class="w-full border rounded p-1 text-xs">
-                <button onclick="loadHistory()" class="bg-blue-600 text-white px-3 rounded text-xs">Filter</button>
+            <div class="flex gap-2 mb-4 bg-gray-50 p-2 rounded-lg">
+                <input type="date" id="hist-start" class="w-full border rounded p-1 text-xs bg-white">
+                <span class="text-gray-400 self-center">-</span>
+                <input type="date" id="hist-end" class="w-full border rounded p-1 text-xs bg-white">
+                <button onclick="loadHistory()" class="bg-blue-600 text-white px-3 rounded text-xs font-bold shadow"><i class="ph ph-magnifying-glass"></i></button>
             </div>
 
-            <div class="overflow-y-auto flex-1">
+            <div class="mb-4 bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] uppercase font-bold text-blue-400" id="rekap-label">Total Keterlambatan</p>
+                    <p class="text-lg font-bold text-blue-800 leading-none mt-1" id="rekap-total-waktu">-</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] uppercase font-bold text-blue-400">Frekuensi</p>
+                    <p class="text-lg font-bold text-blue-800 leading-none mt-1"><span id="rekap-count">0</span>x</p>
+                </div>
+            </div>
+
+            <div class="overflow-y-auto flex-1 border rounded-lg">
                 <table class="w-full text-xs text-left">
-                    <thead class="bg-gray-50 text-gray-500 font-bold">
+                    <thead class="bg-gray-100 text-gray-600 font-bold sticky top-0">
                         <tr>
-                            <th class="p-2">Tgl/Jam</th>
-                            <th class="p-2">Jenis</th>
-                            <th class="p-2">Status</th>
+                            <th class="p-3">Tanggal</th>
+                            <th class="p-3">Jam Absen</th>
+                            <th class="p-3 text-right">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="history-list" class="divide-y">
+                    <tbody id="history-list" class="divide-y divide-gray-50">
                         </tbody>
                 </table>
             </div>
@@ -431,3 +446,4 @@
     </script>
 </body>
 </html>
+
