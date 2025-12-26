@@ -16,6 +16,13 @@
         .hidden { display: none !important; }
         video { transform: scaleX(-1); }
         .btn-disabled { background-color: #cbd5e1 !important; color: #64748b !important; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+        
+        /* Animasi Pulse untuk indikator GPS */
+        @keyframes pulse-red {
+            0%, 100% { background-color: rgba(220, 38, 38, 0.8); }
+            50% { background-color: rgba(220, 38, 38, 0.5); }
+        }
+        .bg-pulse-red { animation: pulse-red 2s infinite; }
     </style>
 </head>
 <body class="bg-gray-50 text-slate-800 h-screen overflow-hidden relative">
@@ -70,7 +77,11 @@
                 <div><p class="text-xs text-blue-200 mb-1">Selamat Datang,</p><h2 class="font-bold text-lg leading-tight" id="dash-nama">Loading...</h2><span class="text-[10px] bg-blue-700 px-2 py-0.5 rounded text-blue-100 mt-1 inline-block" id="dash-jabatan">...</span></div>
                 <button onclick="doLogout()" class="bg-blue-500 p-2 rounded-full hover:bg-blue-400 transition shadow-lg"><i class="ph ph-sign-out text-xl"></i></button>
             </div>
-            <div class="flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm border border-blue-500/30"><i class="ph ph-map-pin text-yellow-300"></i><span id="loc-status">Mencari Lokasi...</span></div>
+            
+            <div id="loc-container" class="flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm border border-blue-500/30 transition-colors duration-300">
+                <i id="loc-icon" class="ph ph-spinner animate-spin text-yellow-300"></i>
+                <span id="loc-status">Mencari Lokasi...</span>
+            </div>
         </div>
 
         <div class="px-6 -mt-10 pb-6 flex-1 overflow-y-auto space-y-4 z-20">
@@ -91,13 +102,17 @@
 
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div class="flex justify-between items-center mb-2"><span class="font-bold text-slate-700">Presensi Masuk</span><span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">07:00 WIB</span></div>
-                <button onclick="openCamera('MASUK')" id="btn-masuk" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2"><i class="ph ph-camera text-lg"></i> Absen Masuk</button>
+                <button onclick="openCamera('MASUK')" id="btn-masuk" class="w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed" disabled>
+                    <i class="ph ph-spinner animate-spin"></i> Menunggu GPS...
+                </button>
                 <div id="info-masuk" class="hidden mt-2 text-xs text-center text-emerald-600 font-medium">Sudah absen pukul <span id="jam-absen-masuk"></span></div>
             </div>
 
             <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
                 <div class="flex justify-between items-center mb-2"><span class="font-bold text-slate-700">Presensi Pulang</span><span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">14:00 WIB</span></div>
-                <button onclick="openCamera('PULANG')" id="btn-pulang" class="w-full bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2"><i class="ph ph-camera text-lg"></i> Absen Pulang</button>
+                <button onclick="openCamera('PULANG')" id="btn-pulang" class="w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed" disabled>
+                    <i class="ph ph-spinner animate-spin"></i> Menunggu GPS...
+                </button>
             </div>
             <div class="text-center pb-4"><p class="text-[10px] text-slate-300">© SMP Muhammadiyah 1 Kartasura</p></div>
         </div>
@@ -137,7 +152,8 @@
         const ALLOWED_LOCATIONS = [{ lat: -7.554048413753806, lng: 110.74561465185563 }, { lat: -7.716264089358359, lng: 110.58996812548884 }];
         const MAX_RADIUS = 750;
 
-        let currentUser = null; let currentType = ''; let videoStream = null; let currentDist = 9999;
+        let currentUser = null; let currentType = ''; let videoStream = null; 
+        let currentDist = 9999; let isGpsLocked = false; // Flag GPS Locked
         let globalStats = { sudah_masuk: false, sudah_pulang: false }; let currentHistoryType = '';
 
         window.onload = () => {
@@ -170,13 +186,13 @@
                 
                 document.getElementById('info-masuk').classList.remove('hidden');
                 document.getElementById('jam-absen-masuk').innerText = stats.jam_masuk;
-                document.getElementById('btn-masuk').innerText = "Sudah Masuk";
+                document.getElementById('btn-masuk').innerHTML = `<i class="ph ph-check-circle text-lg"></i> Sudah Masuk`;
                 document.getElementById('btn-masuk').disabled = true;
                 document.getElementById('btn-masuk').classList.add('btn-disabled');
             } else {
                 boxMasuk.innerHTML = `<span class="text-slate-400 text-xs">Belum Absen</span>`;
                 document.getElementById('info-masuk').classList.add('hidden');
-                document.getElementById('btn-masuk').innerText = "Absen Masuk";
+                document.getElementById('btn-masuk').innerHTML = `<i class="ph ph-camera text-lg"></i> Absen Masuk`;
             }
 
             // Pulang
@@ -189,90 +205,137 @@
             } else {
                 boxPulang.innerHTML = `<span class="text-slate-400 text-xs">Belum Pulang</span>`;
             }
-            checkSchedule();
+            // Panggil cek jadwal, tapi jangan timpa status GPS
+            if(isGpsLocked) checkSchedule();
         }
 
-        async function refreshData(email) {
-            try {
-                const res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'refresh_data', email: email }) });
-                const json = await res.json();
-                if(json.status==='success'){
-                    const sess = JSON.parse(localStorage.getItem('user_session')); sess.stats = json.stats;
-                    localStorage.setItem('user_session', JSON.stringify(sess));
-                    renderDashboard(currentUser, json.stats);
+        // --- LOCATION LOGIC (DIPERBAIKI) ---
+        function watchLocation() {
+            if(navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    // SUCCESS
+                    pos => {
+                        const lat = pos.coords.latitude; const lng = pos.coords.longitude;
+                        let minDistance = Infinity;
+                        ALLOWED_LOCATIONS.forEach(loc => {
+                            const d = getDistance(lat, lng, loc.lat, loc.lng);
+                            if(d < minDistance) minDistance = d;
+                        });
+                        currentDist = minDistance;
+                        isGpsLocked = true;
+                        
+                        // Update UI Lokasi
+                        const container = document.getElementById('loc-container');
+                        const icon = document.getElementById('loc-icon');
+                        const status = document.getElementById('loc-status');
+                        
+                        if(currentDist > MAX_RADIUS) {
+                            status.innerText = `Luar Area (${Math.round(currentDist)}m)`;
+                            container.className = "flex items-center gap-2 text-xs bg-red-600/80 text-white p-2 rounded-lg inline-flex backdrop-blur-sm border border-red-400 shadow-md transition-colors duration-300";
+                            icon.className = "ph ph-warning-circle text-white animate-pulse";
+                        } else {
+                            status.innerText = `Dalam Area (${Math.round(currentDist)}m)`;
+                            container.className = "flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm border border-blue-500/30 transition-colors duration-300";
+                            icon.className = "ph ph-map-pin text-yellow-300";
+                        }
+                        checkSchedule(); // Update tombol berdasarkan jarak
+                    }, 
+                    // ERROR
+                    err => {
+                        handleGpsError();
+                    }, 
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                handleGpsError();
+            }
+        }
+
+        function handleGpsError() {
+            isGpsLocked = false;
+            const container = document.getElementById('loc-container');
+            const icon = document.getElementById('loc-icon');
+            const status = document.getElementById('loc-status');
+            
+            status.innerText = "GPS Mati / Ditolak";
+            container.className = "flex items-center gap-2 text-xs bg-red-600 text-white p-2 rounded-lg inline-flex shadow-lg animate-pulse";
+            icon.className = "ph ph-x-circle text-white";
+            
+            disableButtons("⚠️ Aktifkan GPS");
+        }
+
+        function disableButtons(msg) {
+            const btnMasuk = document.getElementById('btn-masuk');
+            const btnPulang = document.getElementById('btn-pulang');
+            const styleDisabled = "w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed";
+            
+            if(!globalStats.sudah_masuk) {
+                btnMasuk.className = styleDisabled; btnMasuk.disabled = true; btnMasuk.innerHTML = `<i class="ph ph-warning"></i> ${msg}`;
+            }
+            btnPulang.className = styleDisabled; btnPulang.disabled = true; btnPulang.innerHTML = `<i class="ph ph-warning"></i> ${msg}`;
+        }
+
+        function checkSchedule() {
+            // Jika GPS belum lock, jangan jalankan logika jadwal dulu (biar warning GPS tetap muncul)
+            if(!isGpsLocked) return;
+
+            const now = new Date(); const hour = now.getHours(); const day = now.getDay();
+            const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang');
+            if(!btnMasuk || !btnPulang) return;
+            
+            let isClosed = false; let msg = "";
+            if (day === 0) { isClosed = true; msg = "LIBUR (MINGGU)"; }
+            else if (hour < 6 || hour >= 18) { isClosed = true; msg = "TUTUP (06:00-18:00)"; }
+            
+            if (isClosed) {
+                const styleClosed = "w-full bg-slate-400 text-white p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed";
+                btnMasuk.disabled = true; btnMasuk.innerText = msg; btnMasuk.className = styleClosed;
+                btnPulang.disabled = true; btnPulang.innerText = msg; btnPulang.className = styleClosed;
+            } else { 
+                updateButtonState(); 
+            }
+        }
+
+        function updateButtonState() {
+            const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang');
+            const styleActiveMasuk = "w-full bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2";
+            const styleActivePulang = "w-full bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2";
+            const styleDisabled = "w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed";
+            
+            // Jarak Jauh
+            if(currentDist > MAX_RADIUS) {
+                if(!globalStats.sudah_masuk) { 
+                    btnMasuk.className = styleDisabled; btnMasuk.disabled = true; btnMasuk.innerText = "Lokasi Kejauhan";
                 }
-            } catch(e) { console.log('Refresh failed'); }
+                btnPulang.className = styleDisabled; btnPulang.disabled = true; btnPulang.innerText = "Lokasi Kejauhan";
+                return;
+            }
+            
+            // Jarak Aman
+            if(!globalStats.sudah_masuk) { 
+                btnMasuk.className = styleActiveMasuk; btnMasuk.disabled = false; btnMasuk.innerHTML = `<i class="ph ph-camera text-lg"></i> Absen Masuk`;
+            }
+            btnPulang.className = styleActivePulang; btnPulang.disabled = false; btnPulang.innerHTML = `<i class="ph ph-camera text-lg"></i> Absen Pulang`;
         }
 
-        function captureAndSend() {
-            const v=document.getElementById('video-feed'); const c=document.getElementById('canvas-capture'); c.width=v.videoWidth; c.height=v.videoHeight;
-            const ctx=c.getContext('2d'); ctx.translate(c.width, 0); ctx.scale(-1, 1); ctx.drawImage(v,0,0); const foto=c.toDataURL('image/jpeg',0.5); closeCamera();
-            setLoading(true, "Mengirim Presensi...");
-            navigator.geolocation.getCurrentPosition(pos=>{
-                fetch(API_URL,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'absen', nama:currentUser.nama, email:currentUser.email, jenis:currentType, lat:pos.coords.latitude, long:pos.coords.longitude, foto:foto}) })
-                .then(r=>r.json()).then(res=>{ 
-                    setLoading(false); 
-                    if(res.status==='success') { 
-                        alert('Berhasil!'); 
-                        // REFRESH DATA SETELAH SUKSES
-                        refreshData(currentUser.email); 
-                    } else alert(res.message); 
-                }).catch(e=>{setLoading(false); alert('Gagal kirim');});
-            });
-        }
-
-        // --- Helper Lainnya (Login, Register, History, Location) sama seperti sebelumnya ---
-        function doLogin() {
-            const email = document.getElementById('login-email').value; const pass = document.getElementById('login-pass').value; setLoading(true, "Sedang Masuk...");
-            fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'login', email: email, password: pass }) })
-            .then(r=>r.json()).then(res=>{ setLoading(false); if(res.status==='success'){ currentUser=res.data; localStorage.setItem('user_session', JSON.stringify({user:res.data, stats:res.stats})); renderDashboard(res.data, res.stats); switchPage('page-dashboard'); } else alert(res.message); }).catch(e=>{setLoading(false);alert('Gagal koneksi');});
-        }
-        function doRegister() {
-            const data = { action: 'register', nama: document.getElementById('reg-nama').value, jabatan: document.getElementById('reg-jabatan').value, email: document.getElementById('reg-email').value, password: document.getElementById('reg-pass').value }; setLoading(true, "Mendaftar...");
-            fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
-            .then(res => res.json()).then(res => { setLoading(false); if(res.status === 'success') { alert('Berhasil daftar!'); switchPage('page-login'); } else { alert(res.message); } }).catch(e => {setLoading(false); alert('Gagal daftar');});
-        }
+        // --- Helper functions (Login, Register, dsb) TETAP SAMA ---
+        async function refreshData(email) { try { const res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'refresh_data', email: email }) }); const json = await res.json(); if(json.status==='success'){ const sess = JSON.parse(localStorage.getItem('user_session')); sess.stats = json.stats; localStorage.setItem('user_session', JSON.stringify(sess)); renderDashboard(currentUser, json.stats); } } catch(e) { console.log('Refresh failed'); } }
+        function captureAndSend() { const v=document.getElementById('video-feed'); const c=document.getElementById('canvas-capture'); c.width=v.videoWidth; c.height=v.videoHeight; const ctx=c.getContext('2d'); ctx.translate(c.width, 0); ctx.scale(-1, 1); ctx.drawImage(v,0,0); const foto=c.toDataURL('image/jpeg',0.5); closeCamera(); setLoading(true, "Mengirim Presensi..."); navigator.geolocation.getCurrentPosition(pos=>{ fetch(API_URL,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action:'absen', nama:currentUser.nama, email:currentUser.email, jenis:currentType, lat:pos.coords.latitude, long:pos.coords.longitude, foto:foto}) }).then(r=>r.json()).then(res=>{ setLoading(false); if(res.status==='success') { alert('Berhasil!'); refreshData(currentUser.email); } else alert(res.message); }).catch(e=>{setLoading(false); alert('Gagal kirim');}); }); }
+        
+        function doLogin() { const email = document.getElementById('login-email').value; const pass = document.getElementById('login-pass').value; setLoading(true, "Sedang Masuk..."); fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'login', email: email, password: pass }) }).then(r=>r.json()).then(res=>{ setLoading(false); if(res.status==='success'){ currentUser=res.data; localStorage.setItem('user_session', JSON.stringify({user:res.data, stats:res.stats})); renderDashboard(res.data, res.stats); switchPage('page-dashboard'); } else alert(res.message); }).catch(e=>{setLoading(false);alert('Gagal koneksi');}); }
+        function doRegister() { const data = { action: 'register', nama: document.getElementById('reg-nama').value, jabatan: document.getElementById('reg-jabatan').value, email: document.getElementById('reg-email').value, password: document.getElementById('reg-pass').value }; setLoading(true, "Mendaftar..."); fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(res => res.json()).then(res => { setLoading(false); if(res.status === 'success') { alert('Berhasil daftar!'); switchPage('page-login'); } else { alert(res.message); } }).catch(e => {setLoading(false); alert('Gagal daftar');}); }
         function doLogout() { if(confirm('Keluar?')) { localStorage.removeItem('user_session'); location.reload(); } }
         async function openCamera(type) { if(type==='MASUK' && globalStats.sudah_masuk) return; if(currentDist > MAX_RADIUS) { alert('Kejauhan!'); return; } currentType=type; document.getElementById('camera-modal').classList.remove('hidden'); try { videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); document.getElementById('video-feed').srcObject = videoStream; } catch(e){alert('Kamera error');closeCamera();} }
         function closeCamera() { document.getElementById('camera-modal').classList.add('hidden'); if(videoStream) videoStream.getTracks().forEach(t=>t.stop()); }
-        function watchLocation() { if(navigator.geolocation) { navigator.geolocation.watchPosition(pos => { const lat = pos.coords.latitude; const lng = pos.coords.longitude; let minDistance = Infinity; ALLOWED_LOCATIONS.forEach(loc => { const d = getDistance(lat, lng, loc.lat, loc.lng); if(d < minDistance) minDistance = d; }); currentDist = minDistance; const elStatus = document.getElementById('loc-status'); if(currentDist > MAX_RADIUS) { elStatus.innerText = `Luar Area (${Math.round(currentDist)}m)`; elStatus.parentElement.classList.replace('bg-blue-700/50', 'bg-red-600/80'); } else { elStatus.innerText = `Dalam Area (${Math.round(currentDist)}m)`; elStatus.parentElement.classList.replace('bg-red-600/80', 'bg-blue-700/50'); } checkSchedule(); }, err => {}, { enableHighAccuracy: true }); } }
         function updateClock() { const now = new Date(); document.getElementById('dash-clock').innerText = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}); document.getElementById('dash-date').innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'}); }
-        function checkSchedule() { const now = new Date(); const hour = now.getHours(); const day = now.getDay(); const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang'); if(!btnMasuk || !btnPulang) return; let isClosed = false; let msg = ""; if (day === 0) { isClosed = true; msg = "LIBUR (MINGGU)"; } else if (hour < 6 || hour >= 18) { isClosed = true; msg = "TUTUP (06:00-18:00)"; } if (isClosed) { const styleClosed = "w-full bg-slate-400 text-white p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed"; btnMasuk.disabled = true; btnMasuk.innerText = msg; btnMasuk.className = styleClosed; btnPulang.disabled = true; btnPulang.innerText = msg; btnPulang.className = styleClosed; } else { updateButtonState(); } }
-        function updateButtonState() { const btnMasuk = document.getElementById('btn-masuk'); const btnPulang = document.getElementById('btn-pulang'); const styleActiveMasuk = "w-full bg-emerald-500 hover:bg-emerald-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2"; const styleActivePulang = "w-full bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-bold shadow transition flex justify-center items-center gap-2"; const styleDisabled = "w-full bg-slate-300 text-slate-500 p-3 rounded-lg font-bold shadow flex justify-center items-center gap-2 cursor-not-allowed"; if(currentDist > MAX_RADIUS) { if(!globalStats.sudah_masuk) { btnMasuk.className = styleDisabled; btnMasuk.disabled = true; } btnPulang.className = styleDisabled; btnPulang.disabled = true; return; } if(!globalStats.sudah_masuk) { btnMasuk.className = styleActiveMasuk; btnMasuk.disabled = false; btnMasuk.innerText = "Absen Masuk"; } btnPulang.className = styleActivePulang; btnPulang.disabled = false; btnPulang.innerText = "Absen Pulang"; }
         function formatDurationFull(minutes) { if (!minutes || minutes <= 0) return "0 Menit"; const days = Math.floor(minutes / 1440); minutes %= 1440; const hours = Math.floor(minutes / 60); const mins = minutes % 60; let result = ""; if (days > 0) result += `${days} Hari `; if (hours > 0) result += `${hours} Jam `; if (mins > 0) result += `${mins} Menit`; return result.trim(); }
         function formatDurationShort(minutes) { if (!minutes || minutes <= 0) return "0 Mnt"; const h = Math.floor(minutes / 60); const m = minutes % 60; if (h > 0) return `${h} Jam ${m} Mnt`; return `${m} Mnt`; }
         function getDistance(lat1, lon1, lat2, lon2) { const R = 6371e3; const φ1 = lat1 * Math.PI/180; const φ2 = lat2 * Math.PI/180; const Δφ = (lat2-lat1) * Math.PI/180; const Δλ = (lon2-lon1) * Math.PI/180; const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2); return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
-        
-        // --- HISTORY ---
-        function openHistory(type) {
-            currentHistoryType = type; document.getElementById('history-modal').classList.remove('hidden');
-            document.getElementById('hist-title').innerText = type === 'MASUK' ? 'Detail Masuk' : 'Detail Pulang';
-            document.getElementById('rekap-label').innerText = type === 'MASUK' ? 'Total Keterlambatan' : 'Total Pulang Awal';
-            const now = new Date(); const year = now.getFullYear(); const month = String(now.getMonth() + 1).padStart(2, '0');
-            document.getElementById('hist-start').value = `${year}-${month}-01`;
-            document.getElementById('hist-end').value = `${year}-${month}-${String(new Date(year, now.getMonth()+1, 0).getDate()).padStart(2,'0')}`;
-            loadHistory();
-        }
+
+        // History
+        function openHistory(type) { currentHistoryType = type; document.getElementById('history-modal').classList.remove('hidden'); document.getElementById('hist-title').innerText = type === 'MASUK' ? 'Detail Masuk' : 'Detail Pulang'; document.getElementById('rekap-label').innerText = type === 'MASUK' ? 'Total Keterlambatan' : 'Total Pulang Awal'; const now = new Date(); const year = now.getFullYear(); const month = String(now.getMonth() + 1).padStart(2, '0'); document.getElementById('hist-start').value = `${year}-${month}-01`; document.getElementById('hist-end').value = `${year}-${month}-${String(new Date(year, now.getMonth()+1, 0).getDate()).padStart(2,'0')}`; loadHistory(); }
         function closeHistory() { document.getElementById('history-modal').classList.add('hidden'); }
-        async function loadHistory() {
-            const tbody = document.getElementById('history-list'); tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center">Loading...</td></tr>';
-            document.getElementById('rekap-total-waktu').innerText = "..."; document.getElementById('rekap-count').innerText = "0";
-            try {
-                const res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'get_history', email: currentUser.email, startDate: document.getElementById('hist-start').value, endDate: document.getElementById('hist-end').value, jenis: currentHistoryType }) });
-                const json = await res.json(); tbody.innerHTML = '';
-                if (json.data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Tidak ada data</td></tr>'; document.getElementById('rekap-total-waktu').innerText = "0 Menit"; return; }
-                let totalMenitMasalah = 0; let countMasalah = 0;
-                json.data.forEach(row => {
-                    const d = new Date(row.timestamp); const tgl = d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year: '2-digit'}); const jam = d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-                    let statusHTML = ""; let isTrouble = false;
-                    if (currentHistoryType === 'MASUK') { if (row.status_waktu === 'TERLAMBAT') { statusHTML = `<span class="text-red-500 font-bold">Telat ${formatDurationShort(row.menit_selisih)}</span>`; totalMenitMasalah += row.menit_selisih; isTrouble = true; } else { statusHTML = `<span class="text-green-600 font-bold">Tepat</span>`; } } 
-                    else { if (row.status_waktu === 'PULANG AWAL') { statusHTML = `<span class="text-orange-500 font-bold">Awal ${formatDurationShort(row.menit_selisih)}</span>`; totalMenitMasalah += row.menit_selisih; isTrouble = true; } else { statusHTML = `<span class="text-blue-600 font-bold">Oke</span>`; } }
-                    if(isTrouble) countMasalah++;
-                    tbody.innerHTML += `<tr class="hover:bg-gray-50 border-b last:border-0"><td class="p-3 text-gray-600 font-medium">${tgl}</td><td class="p-3 font-bold text-gray-800">${jam}</td><td class="p-3 text-right">${statusHTML}</td></tr>`;
-                });
-                document.getElementById('rekap-total-waktu').innerText = formatDurationFull(totalMenitMasalah); document.getElementById('rekap-count').innerText = countMasalah;
-            } catch(e) { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Error</td></tr>'; }
-        }
+        async function loadHistory() { const tbody = document.getElementById('history-list'); tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center">Loading...</td></tr>'; document.getElementById('rekap-total-waktu').innerText = "..."; document.getElementById('rekap-count').innerText = "0"; try { const res = await fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'get_history', email: currentUser.email, startDate: document.getElementById('hist-start').value, endDate: document.getElementById('hist-end').value, jenis: currentHistoryType }) }); const json = await res.json(); tbody.innerHTML = ''; if (json.data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Tidak ada data</td></tr>'; document.getElementById('rekap-total-waktu').innerText = "0 Menit"; return; } let totalMenitMasalah = 0; let countMasalah = 0; json.data.forEach(row => { const d = new Date(row.timestamp); const tgl = d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year: '2-digit'}); const jam = d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}); let statusHTML = ""; let isTrouble = false; if (currentHistoryType === 'MASUK') { if (row.status_waktu === 'TERLAMBAT') { statusHTML = `<span class="text-red-500 font-bold">Telat ${formatDurationShort(row.menit_selisih)}</span>`; totalMenitMasalah += row.menit_selisih; isTrouble = true; } else { statusHTML = `<span class="text-green-600 font-bold">Tepat</span>`; } } else { if (row.status_waktu === 'PULANG AWAL') { statusHTML = `<span class="text-orange-500 font-bold">Awal ${formatDurationShort(row.menit_selisih)}</span>`; totalMenitMasalah += row.menit_selisih; isTrouble = true; } else { statusHTML = `<span class="text-blue-600 font-bold">Oke</span>`; } } if(isTrouble) countMasalah++; tbody.innerHTML += `<tr class="hover:bg-gray-50 border-b last:border-0"><td class="p-3 text-gray-600 font-medium">${tgl}</td><td class="p-3 font-bold text-gray-800">${jam}</td><td class="p-3 text-right">${statusHTML}</td></tr>`; }); document.getElementById('rekap-total-waktu').innerText = formatDurationFull(totalMenitMasalah); document.getElementById('rekap-count').innerText = countMasalah; } catch(e) { tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Error</td></tr>'; } }
     </script>
 </body>
 </html>
