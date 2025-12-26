@@ -196,22 +196,22 @@
             // 1. INFO MASUK (Harian)
             const boxMasuk = document.getElementById('box-masuk-val');
             if (stats.sudah_masuk) {
-                // Gunakan jam_masuk string dari server ("HH:mm")
                 const jamMasuk = parseInt(stats.jam_masuk.split(':')[0]);
                 const menitMasuk = parseInt(stats.jam_masuk.split(':')[1]);
                 const totalMenitMasuk = (jamMasuk * 60) + menitMasuk;
-                const BATAS_MASUK = (7 * 60); // Jam 07:00
+                const BATAS_MASUK = (7 * 60); // 07:00
 
                 const selisih = totalMenitMasuk - BATAS_MASUK;
                 if (selisih > 0) {
-                    boxMasuk.innerHTML = `<span class="text-red-500">Terlambat ${selisih} mnt</span>`;
+                    // Pakai formatDurationShort agar tampil "1 Jam 5 Mnt"
+                    boxMasuk.innerHTML = `<span class="text-red-500 font-bold">Telat ${formatDurationShort(selisih)}</span>`;
                 } else if (selisih < 0) {
-                    boxMasuk.innerHTML = `<span class="text-green-600">Awal ${Math.abs(selisih)} mnt</span>`;
+                    boxMasuk.innerHTML = `<span class="text-green-600 font-bold">Awal ${formatDurationShort(Math.abs(selisih))}</span>`;
                 } else {
-                    boxMasuk.innerHTML = `<span class="text-green-600">Tepat Waktu</span>`;
+                    boxMasuk.innerHTML = `<span class="text-green-600 font-bold">Tepat Waktu</span>`;
                 }
-
-                // Update UI Tombol Masuk
+                
+                // Update UI Tombol
                 document.getElementById('info-masuk').classList.remove('hidden');
                 document.getElementById('jam-absen-masuk').innerText = stats.jam_masuk;
                 document.getElementById('btn-masuk').innerText = "Sudah Masuk";
@@ -220,7 +220,6 @@
             } else {
                 boxMasuk.innerHTML = `<span class="text-slate-400 text-xs">Belum Absen</span>`;
                 document.getElementById('info-masuk').classList.add('hidden');
-                document.getElementById('btn-masuk').innerText = "Absen Masuk";
             }
 
             // 2. INFO PULANG (Harian)
@@ -229,37 +228,61 @@
                 const jamPulang = parseInt(stats.jam_pulang.split(':')[0]);
                 const menitPulang = parseInt(stats.jam_pulang.split(':')[1]);
                 const totalMenitPulang = (jamPulang * 60) + menitPulang;
-                const BATAS_PULANG = (14 * 60); // Jam 14:00
+                const BATAS_PULANG = (14 * 60); // 14:00
 
                 const selisih = BATAS_PULANG - totalMenitPulang;
                 if (selisih > 0) {
-                    // Pulang sebelum jam 14:00
-                    boxPulang.innerHTML = `<span class="text-orange-500">Pulang Awal ${selisih} mnt</span>`;
+                    boxPulang.innerHTML = `<span class="text-orange-500 font-bold">Awal ${formatDurationShort(selisih)}</span>`;
                 } else {
-                    // Pulang setelah/pas jam 14:00
                     const lebih = Math.abs(selisih);
-                    boxPulang.innerHTML = `<span class="text-blue-600">Tepat Waktu ${lebih > 0 ? '(+' + lebih + 'm)' : ''}</span>`;
+                    boxPulang.innerHTML = `<span class="text-blue-600 font-bold">Tepat ${lebih > 0 ? '(+' + formatDurationShort(lebih) + ')' : ''}</span>`;
                 }
             } else {
                 boxPulang.innerHTML = `<span class="text-slate-400 text-xs">Belum Pulang</span>`;
             }
-            
             checkSchedule();
         }
 
         // --- LOGIKA HISTORY ---
-        async function openHistory(type) {
+        let currentHistoryType = ''; // Variable global baru utk simpan status modal
+
+        function openHistory(type) {
+            currentHistoryType = type;
             document.getElementById('history-modal').classList.remove('hidden');
-            // Set default date hari ini
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('hist-start').value = today;
-            document.getElementById('hist-end').value = today;
+            
+            // Set Judul Modal
+            document.getElementById('hist-title').innerText = type === 'MASUK' ? 'Detail Masuk' : 'Detail Pulang';
+            document.getElementById('rekap-label').innerText = type === 'MASUK' ? 'Total Keterlambatan' : 'Total Pulang Awal';
+
+            // Auto Set Tanggal: Tanggal 1 Bulan Ini s/d Hari Ini (atau akhir bulan)
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            
+            // Hari pertama bulan ini
+            const firstDay = `${year}-${month}-01`;
+            // Hari terakhir bulan ini (auto calc)
+            const lastDayDate = new Date(year, now.getMonth() + 1, 0); 
+            const lastDay = `${year}-${month}-${String(lastDayDate.getDate()).padStart(2,'0')}`;
+
+            document.getElementById('hist-start').value = firstDay;
+            document.getElementById('hist-end').value = lastDay;
+            
             loadHistory();
+        }
+
+        function closeHistory() {
+            document.getElementById('history-modal').classList.add('hidden');
         }
 
         async function loadHistory() {
             const tbody = document.getElementById('history-list');
+            const elTotal = document.getElementById('rekap-total-waktu');
+            const elCount = document.getElementById('rekap-count');
+            
             tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center">Loading...</td></tr>';
+            elTotal.innerText = "...";
+            elCount.innerText = "0";
             
             const start = document.getElementById('hist-start').value;
             const end = document.getElementById('hist-end').value;
@@ -272,40 +295,64 @@
                         action: 'get_history', 
                         email: currentUser.email,
                         startDate: start,
-                        endDate: end
+                        endDate: end,
+                        jenis: currentHistoryType // Kirim jenis (MASUK/PULANG) ke backend
                     })
                 });
                 const json = await res.json();
                 tbody.innerHTML = '';
                 
                 if (json.data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Tidak ada data</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-400">Tidak ada data pada periode ini</td></tr>';
+                    elTotal.innerText = "0 Menit";
                     return;
                 }
 
+                let totalMenitMasalah = 0; // Keterlambatan atau Pulang Awal
+                let countMasalah = 0;
+
                 json.data.forEach(row => {
                     const d = new Date(row.timestamp);
-                    const tgl = d.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+                    const tgl = d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year: '2-digit'});
                     const jam = d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
                     
-                    let statusHTML = `<span class="text-gray-500">${row.status_waktu}</span>`;
-                    if(row.status_waktu === 'TERLAMBAT' || row.status_waktu === 'PULANG AWAL') {
-                        statusHTML = `<span class="text-red-500 font-bold">${row.status_waktu} (${row.menit_selisih}m)</span>`;
-                    } else {
-                        statusHTML = `<span class="text-green-600 font-bold">OK</span>`;
+                    let statusHTML = "";
+                    let isTrouble = false;
+
+                    // Logic Status & Warna
+                    if (currentHistoryType === 'MASUK') {
+                        if (row.status_waktu === 'TERLAMBAT') {
+                            statusHTML = `<span class="text-red-500 font-bold">Telat ${formatDurationShort(row.menit_selisih)}</span>`;
+                            totalMenitMasalah += row.menit_selisih;
+                            isTrouble = true;
+                        } else {
+                            statusHTML = `<span class="text-green-600 font-bold">Tepat Waktu</span>`;
+                        }
+                    } else { // PULANG
+                        if (row.status_waktu === 'PULANG AWAL') {
+                            statusHTML = `<span class="text-orange-500 font-bold">Awal ${formatDurationShort(row.menit_selisih)}</span>`;
+                            totalMenitMasalah += row.menit_selisih;
+                            isTrouble = true;
+                        } else {
+                            statusHTML = `<span class="text-blue-600 font-bold">Oke</span>`;
+                        }
                     }
 
+                    if(isTrouble) countMasalah++;
+
                     tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 border-b">
-                            <td class="p-2">
-                                <div class="font-bold">${jam}</div>
-                                <div class="text-[10px] text-gray-400">${tgl}</div>
-                            </td>
-                            <td class="p-2"><span class="px-2 py-0.5 rounded text-[10px] ${row.jenis==='MASUK'?'bg-emerald-100 text-emerald-800':'bg-orange-100 text-orange-800'}">${row.jenis}</span></td>
-                            <td class="p-2 text-[10px]">${statusHTML}</td>
+                        <tr class="hover:bg-gray-50 border-b last:border-0">
+                            <td class="p-3 text-gray-600 font-medium">${tgl}</td>
+                            <td class="p-3 font-bold text-gray-800">${jam}</td>
+                            <td class="p-3 text-right">${statusHTML}</td>
                         </tr>
                     `;
                 });
+
+                // TAMPILKAN TOTAL REKAP (Konversi Menit -> Hari/Jam/Menit)
+                elTotal.innerText = formatDurationFull(totalMenitMasalah);
+                elCount.innerText = countMasalah;
+
             } catch(e) {
                 tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500">Gagal load data</td></tr>';
             }
@@ -443,7 +490,39 @@
             const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
+
+        // Fungsi konversi Menit ke "X Hari Y Jam Z Menit"
+        function formatDurationFull(minutes) {
+            if (!minutes || minutes <= 0) return "0 Menit";
+            
+            let sisa = minutes;
+            // Asumsi: 1 Hari kerja "keterlambatan" dalam konteks akumulasi 
+            // biasanya dihitung 24 jam atau jam kerja? 
+            // Standarnya kita pakai konversi waktu murni: 1 Hari = 24 Jam (1440 menit)
+            const days = Math.floor(sisa / 1440);
+            sisa %= 1440;
+            
+            const hours = Math.floor(sisa / 60);
+            const mins = sisa % 60;
+
+            let result = "";
+            if (days > 0) result += `${days} Hari `;
+            if (hours > 0) result += `${hours} Jam `;
+            if (mins > 0) result += `${mins} Menit`;
+            
+            return result.trim();
+        }
+
+        // Fungsi konversi pendek untuk Dashboard (misal: "1 Jam 5 Mnt")
+        function formatDurationShort(minutes) {
+            if (!minutes || minutes <= 0) return "0 Mnt";
+            const h = Math.floor(minutes / 60);
+            const m = minutes % 60;
+            if (h > 0) return `${h} Jam ${m} Mnt`;
+            return `${m} Mnt`;
+        }
     </script>
 </body>
 </html>
+
 
