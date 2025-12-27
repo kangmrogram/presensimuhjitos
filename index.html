@@ -60,9 +60,11 @@
             </div>
             <div class="flex justify-between items-start mb-6">
                 <div><p class="text-xs text-blue-200 mb-1">Selamat Datang,</p><h2 class="font-bold text-lg leading-tight" id="dash-nama">Loading...</h2><span class="text-[10px] bg-blue-700 px-2 py-0.5 rounded text-blue-100 mt-1 inline-block" id="dash-jabatan">...</span></div>
+                
                 <div class="flex gap-2">
-                    <button onclick="openProfile()" class="bg-blue-500 p-2 rounded-full hover:bg-blue-400 transition shadow-lg"><i class="ph ph-user text-xl"></i></button>
-                    <button onclick="doLogout()" class="bg-red-500 p-2 rounded-full hover:bg-red-400 transition shadow-lg"><i class="ph ph-sign-out text-xl"></i></button>
+                    <button onclick="openProfile()" class="bg-blue-500 p-2 rounded-full hover:bg-blue-400 transition shadow-lg text-white" title="Edit Profil"><i class="ph ph-user text-xl"></i></button>
+                    <button onclick="openPasswordModal()" class="bg-amber-500 p-2 rounded-full hover:bg-amber-400 transition shadow-lg text-white" title="Ganti Password"><i class="ph ph-lock-key text-xl"></i></button>
+                    <button onclick="doLogout()" class="bg-red-500 p-2 rounded-full hover:bg-red-400 transition shadow-lg text-white" title="Keluar"><i class="ph ph-sign-out text-xl"></i></button>
                 </div>
             </div>
             <div id="loc-container" class="flex items-center gap-2 text-xs bg-blue-700/50 p-2 rounded-lg inline-flex backdrop-blur-sm border border-blue-500/30 transition-colors duration-300"><i id="loc-icon" class="ph ph-spinner animate-spin text-yellow-300"></i><span id="loc-status">Mencari Lokasi...</span></div>
@@ -141,19 +143,32 @@
                     <div><label class="text-[10px] uppercase font-bold text-slate-400">Nomor Rekening Bank</label><input type="text" id="prof-rek" class="w-full border-b py-1 focus:outline-none focus:border-blue-500 text-sm font-medium" placeholder="Nama Bank - No Rekening"></div>
                 </div>
             </div>
-
             <button onclick="saveProfile()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition">SIMPAN PERUBAHAN</button>
+        </div>
+    </section>
 
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 mt-8">
-                <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><i class="ph ph-lock-key text-xl"></i> Ganti Password</h2>
-                <div class="space-y-3">
-                    <input type="password" id="pass-old" placeholder="Password Lama" class="w-full px-4 py-2 border rounded text-sm">
-                    <input type="password" id="pass-new" placeholder="Password Baru" class="w-full px-4 py-2 border rounded text-sm">
-                    <button onclick="changePassword()" class="w-full bg-slate-800 text-white font-bold py-2 rounded text-sm">Update Password</button>
+    <div id="password-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm px-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-slide-up">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2"><i class="ph ph-shield-check text-blue-600 text-2xl"></i> Ganti Password</h3>
+                <button onclick="closePasswordModal()" class="text-slate-400 hover:text-red-500"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Password Lama</label>
+                    <input type="password" id="pass-old" placeholder="Masukkan password saat ini" class="w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Password Baru</label>
+                    <input type="password" id="pass-new" placeholder="Minimal 6 karakter" class="w-full px-4 py-3 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-slate-50">
+                </div>
+                <div class="pt-2">
+                    <button onclick="changePassword()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg hover:bg-slate-900 shadow-lg">Update Password</button>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <div id="history-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-end sm:items-center justify-center backdrop-blur-sm">
         <div class="bg-white w-full sm:w-[500px] rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] flex flex-col animate-slide-up shadow-2xl">
@@ -208,14 +223,12 @@
         function switchPage(id) { document.querySelectorAll('section').forEach(el => el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
         function setLoading(show, txt) { const el = document.getElementById('loader'); if(show) { document.getElementById('loader-text').innerText = txt; el.classList.remove('hidden'); } else el.classList.add('hidden'); }
 
-        // --- PROFIL LOGIC (BARU) ---
+        // --- PROFIL LOGIC ---
         function openProfile() {
             switchPage('page-profile');
-            // Isi form dengan data currentUser
             document.getElementById('prof-nama').value = currentUser.nama || '';
             document.getElementById('prof-jabatan').value = currentUser.jabatan || '';
             document.getElementById('prof-email').value = currentUser.email || '';
-            
             document.getElementById('prof-jk').value = currentUser.jenis_kelamin || '';
             document.getElementById('prof-alamat').value = currentUser.alamat || '';
             document.getElementById('prof-tempat-lahir').value = currentUser.tempat_lahir || '';
@@ -230,20 +243,13 @@
 
         function saveProfile() {
             const data = {
-                action: 'update_profile',
-                email: currentUser.email, // Key utama
-                nama: document.getElementById('prof-nama').value,
-                jabatan: document.getElementById('prof-jabatan').value,
-                jenis_kelamin: document.getElementById('prof-jk').value,
-                alamat: document.getElementById('prof-alamat').value,
-                tempat_lahir: document.getElementById('prof-tempat-lahir').value,
-                tanggal_lahir: document.getElementById('prof-tgl-lahir').value,
-                nip: document.getElementById('prof-nip').value,
-                nbm: document.getElementById('prof-nbm').value,
-                nik: document.getElementById('prof-nik').value,
-                npwp: document.getElementById('prof-npwp').value,
-                no_hp: document.getElementById('prof-hp').value,
-                no_rekening: document.getElementById('prof-rek').value
+                action: 'update_profile', email: currentUser.email,
+                nama: document.getElementById('prof-nama').value, jabatan: document.getElementById('prof-jabatan').value,
+                jenis_kelamin: document.getElementById('prof-jk').value, alamat: document.getElementById('prof-alamat').value,
+                tempat_lahir: document.getElementById('prof-tempat-lahir').value, tanggal_lahir: document.getElementById('prof-tgl-lahir').value,
+                nip: document.getElementById('prof-nip').value, nbm: document.getElementById('prof-nbm').value,
+                nik: document.getElementById('prof-nik').value, npwp: document.getElementById('prof-npwp').value,
+                no_hp: document.getElementById('prof-hp').value, no_rekening: document.getElementById('prof-rek').value
             };
             setLoading(true, "Menyimpan Profil...");
             fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) })
@@ -251,34 +257,24 @@
                 setLoading(false);
                 if(res.status === 'success') {
                     alert('Profil Berhasil Diupdate!');
-                    // Update session lokal
-                    currentUser = res.data; // Server harus return data user terbaru
-                    const sess = JSON.parse(localStorage.getItem('user_session'));
-                    sess.user = currentUser;
-                    localStorage.setItem('user_session', JSON.stringify(sess));
-                    renderDashboard(currentUser, sess.stats); // Refresh nama di dashboard
+                    currentUser = res.data; const sess = JSON.parse(localStorage.getItem('user_session')); sess.user = currentUser;
+                    localStorage.setItem('user_session', JSON.stringify(sess)); renderDashboard(currentUser, sess.stats);
                 } else { alert(res.message); }
             }).catch(e => { setLoading(false); alert('Gagal koneksi'); });
         }
 
+        // --- PASSWORD LOGIC ---
+        function openPasswordModal() { document.getElementById('password-modal').classList.remove('hidden'); }
+        function closePasswordModal() { document.getElementById('password-modal').classList.add('hidden'); document.getElementById('pass-old').value=''; document.getElementById('pass-new').value=''; }
         function changePassword() {
-            const oldP = document.getElementById('pass-old').value;
-            const newP = document.getElementById('pass-new').value;
-            if(!oldP || !newP) return alert('Isi password lama dan baru!');
-            if(newP.length < 6) return alert('Password baru minimal 6 karakter');
-            
+            const oldP = document.getElementById('pass-old').value; const newP = document.getElementById('pass-new').value;
+            if(!oldP || !newP) return alert('Isi password lama dan baru!'); if(newP.length < 6) return alert('Password baru minimal 6 karakter');
             setLoading(true, "Mengganti Password...");
             fetch(API_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'change_password', email: currentUser.email, oldPassword: oldP, newPassword: newP }) })
-            .then(r => r.json()).then(res => {
-                setLoading(false);
-                if(res.status === 'success') {
-                    alert('Password Berhasil Diganti! Silakan Login Ulang.');
-                    localStorage.removeItem('user_session');
-                    location.reload();
-                } else { alert(res.message); }
-            }).catch(e => { setLoading(false); alert('Gagal koneksi'); });
+            .then(r => r.json()).then(res => { setLoading(false); if(res.status === 'success') { alert('Berhasil Ganti Password! Silakan Login Ulang.'); localStorage.removeItem('user_session'); location.reload(); } else { alert(res.message); } }).catch(e => { setLoading(false); alert('Gagal koneksi'); });
         }
 
+        // --- DASHBOARD LOGIC (SAMA) ---
         function renderDashboard(user, stats) {
             globalStats = stats;
             document.getElementById('dash-nama').innerText = user.nama; document.getElementById('dash-jabatan').innerText = user.jabatan;
@@ -313,7 +309,7 @@
             if(isGpsLocked) checkSchedule();
         }
 
-        // --- LOGIC LAINNYA (SAMA SEPERTI SEBELUMNYA) ---
+        // --- LOCATION & UTILS (SAMA) ---
         function watchLocation() {
             if(navigator.geolocation) {
                 navigator.geolocation.watchPosition(
